@@ -1,0 +1,15 @@
+# Caddy reverse proxy for Aetheria
+# DOMAIN is provided by docker-compose (defaults to localhost).
+{$DOMAIN:localhost} {
+	encode zstd gzip
+
+	# Security headers (TLS is automatic with Caddy)
+	header {
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "SAMEORIGIN"
+		Referrer-Policy "strict-origin-when-cross-origin"
+	}
+
+	# The PWA and API are served by the same Node process
+	reverse_proxy app:3000
+}

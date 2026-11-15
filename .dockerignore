@@ -1,0 +1,29 @@
+# Dependencies / build output
+node_modules
+dist
+data
+*.log
+*.db
+*.sqlite
+*.sqlite3
+
+# Local env & secrets
+.env
+.env.*
+!.env.example
+
+# Version control / editor
+.git
+.gitignore
+.vscode
+.idea
+
+# Legacy / scratch files (root-level)
+test_vite*.html
+_preview-wide.html
+rpg_guild_builder_fiche_d_aventurier.html
+generate-icons.html
+
+# Docs
+README.md
+DEPLOY.md

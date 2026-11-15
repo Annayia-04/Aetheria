@@ -1,0 +1,35 @@
+{
+  "name": "Aetheria — Forge de héros",
+  "short_name": "Aetheria",
+  "description": "Façonne ta fiche d’aventurier : apparence, classe, attributs et grimoire d’équipe. Une carte de héros médiévale-fantasy à partager avec ta guilde.",
+  "lang": "fr",
+  "dir": "ltr",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
+  "orientation": "any",
+  "background_color": "#08070b",
+  "theme_color": "#08070b",
+  "categories": ["productivity", "entertainment", "lifestyle"],
+  "icons": [
+    {
+      "src": "assets/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

@@ -1,0 +1,54 @@
+/* ==========================================================================
+   AETHERIA — Polices auto-hébergées
+   ========================================================================== */
+
+@font-face {
+  font-family: "Cinzel Decorative";
+  font-weight: 700;
+  font-display: swap;
+  src: local("Cinzel Decorative Bold"),
+       url("CinzelDecorative-Bold.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Cinzel Decorative";
+  font-weight: 900;
+  font-display: swap;
+  src: local("Cinzel Decorative Black"),
+       url("CinzelDecorative-Black.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Cinzel Decorative";
+  font-weight: 500;
+  font-display: swap;
+  src: local("Cinzel Decorative Regular"),
+       url("CinzelDecorative-Regular.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Cinzel";
+  font-weight: 500 700 800;
+  font-display: swap;
+  src: local("Cinzel"),
+       url("Cinzel-VariableFont_wght.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Manrope";
+  font-weight: 400 500 600 700;
+  font-display: swap;
+  src: local("Manrope"),
+       url("Manrope-VariableFont_wght.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Cormorant Garamond";
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+  src: local("Cormorant Garamond Italic"),
+       url("CormorantGaramond-Italic-VariableFont_wght.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Cormorant Garamond";
+  font-weight: 400 600 700;
+  font-display: swap;
+  src: local("Cormorant Garamond"),
+       url("CormorantGaramond-VariableFont_wght.woff2") format("woff2");
+}

@@ -1,0 +1,44 @@
+services:
+  app:
+    build: .
+    image: aetheria:latest
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DATABASE_TYPE: sqlite
+      # Persistent SQLite file inside the mounted volume
+      SQLITE_PATH: /app/data/aetheria.db
+    volumes:
+      - aetheria-data:/app/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:3000/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+  # Optional HTTPS reverse proxy.
+  # Usage: DOMAIN=aetheria.example.com docker compose --profile tls up -d --build
+  caddy:
+    image: caddy:2-alpine
+    profiles: ["tls"]
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      DOMAIN: ${DOMAIN:-localhost}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      - app
+    restart: unless-stopped
+
+volumes:
+  aetheria-data:
+  caddy-data:
+  caddy-config:

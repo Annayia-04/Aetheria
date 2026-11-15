@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <script type="module" src="/@vite/client"></script>
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#0d1b2a">
+  <meta name="description" content="Aetheria — Forge de Héros : Crée ton aventurier, personnalise son avatar, définit ses stats et partage ta fiche avec ta guilde.">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Aetheria">
+  <title>Aetheria · Forge de Héros</title>
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <link rel="stylesheet" href="/assets/fonts/fonts.css">
+  <link rel="stylesheet" href="/styles.css">
+  <script type="module" src="/src/main.js"></script>
+</head>
+<body>
+  <!-- ==================== ICONOTHÈQUE SVG (Symbol Sprite) ==================== -->
+  <svg class="svg-sprite" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+    <symbol id="i-dice" viewBox="0 0 24 24"><path d="M12 2.4 21.2 7.5v9L12 21.6 2.8 16.5v-9Z"/><path d="M12 21.6V12M2.8 7.5 12 12l9.2-4.5M7.2 4.9 12 12l4.8-7.1"/></symbol>
+    <symbol id="i-hammer" viewBox="0 0 24 24"><path d="M14.8 3.2 20.8 9.2 17.9 12.1 11.9 6.1Z"/><path d="M10.9 7.1 16.9 13.1 8.2 21.8a2.12 2.12 0 0 1-3-3Z"/><path d="M4 20 8.5 15.5"/></symbol>
+    <symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.4"/><path d="M2.8 20c.2-3.4 2.8-5.7 6.2-5.7s6 2.3 6.2 5.7"/><path d="M15.6 5.2a3.1 3.1 0 0 1 0 5.9M17.4 14.8c2.2.5 3.6 2.2 3.8 4.5"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 2.5 19 5.3v5.9c0 4.9-3.1 8.2-7 10.3-3.9-2.1-7-5.4-7-10.3V5.3Z"/><path d="M12 7v7M9 9.6h6"/></symbol>
+    <symbol id="i-compass" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m15.4 8.6-2 4.8-4.8 2 2-4.8Z"/></symbol>
+    <symbol id="i-mask" viewBox="0 0 24 24"><path d="M4 5.5h16v6.2c0 4.3-3.6 7.6-8 7.6s-8-3.3-8-7.6Z"/><path d="M7.5 10.2c.8-.9 2-.9 2.8 0M13.7 10.2c.8-.9 2-.9 2.8 0M9.5 15.2c1.6 1.2 3.4 1.2 5 0"/></symbol>
+    <symbol id="i-flask" viewBox="0 0 24 24"><path d="M9 2.8h6M10 2.8v5.1L5.3 18a2.2 2.2 0 0 0 2 3.1h9.4a2.2 2.2 0 0 0 2-3.1L14 7.9V2.8"/><path d="M7.2 15h9.6"/></symbol>
+    <symbol id="i-sparkles" viewBox="0 0 24 24"><path d="m12 2.8 1.7 4.9 4.9 1.7-4.9 1.7L12 16l-1.7-4.9L5.4 9.4l4.9-1.7Z"/><path d="m18.6 14.4.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8Z"/></symbol>
+    <symbol id="i-shuffle" viewBox="0 0 24 24"><path d="M3 7h3.5c4 0 5 10 9 10H21M3 17h3.5c1.7 0 2.8-1.8 3.8-3.8M17 3l4 4-4 4M17 13l4 4-4 4"/></symbol>
+    <symbol id="i-save" viewBox="0 0 24 24"><path d="M4.5 3h11.2L21 8.3V21H4.5Z"/><path d="M8 3v6.3h8V3M8 14h8v7H8Z"/></symbol>
+    <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M4 21h16"/></symbol>
+    <symbol id="i-share" viewBox="0 0 24 24"><circle cx="18" cy="5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="19" r="2.5"/><path d="m8.2 10.9 7.5-4.5M8.2 13.1l7.5 4.5"/></symbol>
+    <symbol id="i-copy" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="13" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h3"/></symbol>
+    <symbol id="i-volume" viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9Z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></symbol>
+    <symbol id="i-mute" viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9Z"/><path d="m16 9 5 5M21 9l-5 5"/></symbol>
+    <symbol id="i-scroll" viewBox="0 0 24 24"><path d="M6 4h13v14.5A2.5 2.5 0 0 0 21.5 21H8.5A2.5 2.5 0 0 1 6 18.5Z"/><path d="M6 4a2.5 2.5 0 0 0-2.5 2.5V8H6M9 8h6M9 12h6M9 16h4"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 14h10l1-14M10 11v6M14 11v6"/></symbol>
+    <symbol id="i-edit" viewBox="0 0 24 24"><path d="m4 20 4.2-1.2L20 7a2.12 2.12 0 0 0-3-3L5.2 15.8Z"/><path d="m14.5 5.5 4 4"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5 5"/></symbol>
+    <symbol id="i-chevron-down" viewBox="0 0 24 24"><path d="m5 9 7 7 7-7"/></symbol>
+    <symbol id="i-chevron-right" viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></symbol>
+    <symbol id="i-arrow-left" viewBox="0 0 24 24"><path d="M21 12H3M9 6l-6 6 6 6"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 4v16M4 12h16"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="m4 12.5 5 5L20 6.5"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M19.1 4.9l-1.4 1.4M6.3 17.7l-1.4 1.4"/></symbol>
+    <symbol id="i-skull" viewBox="0 0 24 24"><path d="M12 2.5a8.5 8.5 0 0 1 8.5 8.5c0 1.9-.7 3.6-1.8 4.9l-.5.6c-.6.6-1.1 1.4-1.1 2.1 0 1.3 1.1 2.4 2.4 2.4h2.2c1.3 0 2.4-1.1 2.4-2.4v-7.2c0-1.8-1.4-3.3-3.1-3.5-1.8-.2-3.5.6-4.5 1.8-.5-.6-1.2-1-1.9-1.1C12.6 4 10.2 3 7.8 3a8.5 8.5 0 0 1 4.2-0.5Z"/></symbol>
+    <symbol id="i-wind" viewBox="0 0 24 24"><path d="M9.59 4.59A8 8 0 1 1 11 18M15.89 9.89a4 4 0 1 1 3 5.5M14.5 18H10"/></symbol>
+    <symbol id="i-bolt" viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8Z"/></symbol>
+    <symbol id="i-crown" viewBox="0 0 24 24"><path d="M12 2l2 7 7 2-5 5 1 7-6-4-6 4 1-7-5-5 7-2Z"/></symbol>
+    <symbol id="i-image" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></symbol>
+    <symbol id="i-install" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></symbol>
+    <symbol id="i-cog" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1Z"/></symbol>
+    <symbol id="i-book" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20A2.5 2.5 0 0 1 22.5 19.5V22H4V19.5Z"/><path d="M4 17v-12A2.5 2.5 0 0 1 6.5 2H20A2.5 2.5 0 0 1 22.5 4.5V17"/><path d="M12 7v10"/></symbol>
+    <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></symbol>
+    <symbol id="i-heart" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></symbol>
+    <symbol id="i-star" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></symbol>
+    <symbol id="i-gem" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></symbol>
+    <symbol id="i-flame" viewBox="0 0 24 24"><path d="M8.5 14.5A2.5 2.5 0 0 1 11 12c0-1.38-.5-2.5-1.5-3.5A2.5 2.5 0 0 1 13.5 5c1.5 0 2.7 1.2 3.2 2.8A3.5 3.5 0 0 1 20.5 12c0 1.5-.5 2.8-1.5 3.8A3.5 3.5 0 0 1 17.5 18.5c-1.5 0-2.7-1.2-3.2-2.8A2.5 2.5 0 0 1 12 15.5Z"/></symbol>
+    <symbol id="i-anvil" viewBox="0 0 24 24"><path d="M4 6h16M4 6v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6M8 16v4M16 16v4"/></symbol>
+    <symbol id="i-quill" viewBox="0 0 24 24"><path d="M12.5 3a2.5 2.5 0 0 1 3.5 0l2.5 2.5a2.5 2.5 0 0 1 0 3.5L12 18h-3v-3l6-6-3-3v-3Z"/><path d="M10 15l-3 3"/></symbol>
+    <symbol id="i-wrench" viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></symbol>
+    <symbol id="i-feather" viewBox="0 0 24 24"><path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19a2 2 0 0 0 2 2h7.5L12 18l3.5 3.5a2 2 0 0 0 2.5-2.5L16 10.5 20.24 6.24Z"/></symbol>
+    <symbol id="i-helmet" viewBox="0 0 24 24"><path d="M17 3a2 2 0 0 1 2 2v2H3V5a2 2 0 0 1 2-2h12Z"/><path d="M5 7h14v10a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V7Z"/></symbol>
+    <symbol id="i-cloak" viewBox="0 0 24 24"><path d="M2 5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5Z"/><path d="M9 3v2M15 3v2"/></symbol>
+    <symbol id="i-award" viewBox="0 0 24 24"><circle cx="12" cy="8" r="6"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1Z"/></symbol>
+    <symbol id="i-map" viewBox="0 0 24 24"><path d="M2 5v14a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V5"/><path d="M2 5l10 7 10-7"/></symbol>
+    <symbol id="i-compass-rose" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polygon points="12 2 13 7 18 7 13 12 13 17 12 22 11 17 11 12 6 12 11 7 11 2"/></symbol>
+  </svg>
+
+  <!-- ==================== AUDIO CONTEXT INIT (User Gesture) ==================== -->
+  <div id="audio-unlock" class="hidden" aria-hidden="true"></div>
+
+  <!-- ==================== TOP BAR / HUD ==================== -->
+  <header class="topbar" role="banner">
+    <div class="topbar-inner">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 44 44"><use href="#i-anvil"/></svg>
+        </div>
+        <div class="brand-text">
+          <strong>Aetheria</strong>
+          <small>Forge de Héros</small>
+        </div>
+      </div>
+
+      <nav class="top-tabs" role="tablist" aria-label="Vues principales">
+        <button role="tab" class="top-tab is-active" data-view="forge" aria-selected="true"><svg><use href="#i-hammer"/></svg><span>Forge</span></button>
+        <button role="tab" class="top-tab" data-view="guild" aria-selected="false"><svg><use href="#i-users"/></svg><span>Guilde</span></button>
+      </nav>
+
+      <div class="top-actions">
+        <button class="icon-btn" id="install-btn" aria-label="Installer l'application" title="Installer"><svg><use href="#i-install"/></svg></button>
+        <button class="icon-btn btn-save" id="save-btn" aria-label="Sauvegarder le brouillon" title="Sauvegarder"><svg><use href="#i-save"/></svg><span>Sauvegarder</span></button>
+        <button class="icon-btn" id="sound-btn" aria-label="Activer/Désactiver les sons" title="Sons"><svg><use href="#i-volume"/></svg></button>
+        <button class="icon-btn" id="protocol-btn" aria-label="Voir le protocole d'atelier" title="Protocole"><svg><use href="#i-scroll"/></svg></button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ==================== MAIN APP SHELL ==================== -->
+  <div class="app-shell">
+    <!-- -------------------- VUE FORGE -------------------- -->
+    <section class="view is-active" data-view="forge" role="region" aria-label="Forge du Héros">
+      <div class="forge-layout">
+        <!-- COLONNE GAUCHE : CARTE DE HÉROS (STICKY) -->
+        <aside class="stage-column">
+          <div class="stage-card" id="hero-card-stage">
+            <div class="portrait-frame" id="portrait-frame">
+              <div class="portrait-backdrop" id="portrait-backdrop" aria-hidden="true"></div>
+              <div class="portrait-glow" id="portrait-glow" aria-hidden="true"></div>
+              <div class="avatar-stage">
+                <div id="avatar-canvas-wrap" class="avatar-canvas-wrap"></div>
+                <svg class="avatar-svg" id="avatar-svg" viewBox="0 0 400 480" preserveAspectRatio="xMidYMin slice" role="img" aria-label="Aperçu de l'avatar" style="display:none"></svg>
+              </div>
+              <div class="portrait-particles" id="portrait-particles" aria-hidden="true"></div>
+            </div>
+            <figcaption class="portrait-caption">
+              <div class="portrait-name-row">
+                <h1 class="portrait-name" id="portrait-name">—</h1>
+                <span class="level-chip" id="level-chip"><svg><use href="#i-sparkles"/></svg> Niv. 1</span>
+              </div>
+              <p class="portrait-title" id="portrait-title">—</p>
+              <p class="portrait-guild" id="portrait-guild">Sans guilde</p>
+              <p class="stage-motto" id="portrait-motto">« Prêt à forger ta légende ? »</p>
+            </figcaption>
+
+            <div class="completion-badge" id="completion-badge" aria-hidden="true">
+              <svg class="completion-ring" viewBox="0 0 52 52"><circle class="completion-track" cx="26" cy="26" r="20" fill="none"/><circle class="completion-progress" cx="26" cy="26" r="20" fill="none"/></svg>
+              <span class="completion-text">0%</span>
+            </div>
+
+            <!-- Grimoire preview on hero card -->
+            <div class="hero-grimoire" id="hero-grimoire" aria-label="Aperçu du Grimoire">
+              <div class="grimoire-section-mini">
+                <span class="grimoire-label-mini"><svg><use href="#i-sun"/></svg> Don Ultime</span>
+                <p id="card-ultimate-txt" class="grimoire-text-mini">—</p>
+              </div>
+              <div class="grimoire-section-mini">
+                <span class="grimoire-label-mini"><svg><use href="#i-skull"/></svg> Kryptonite</span>
+                <p id="card-weakness-txt" class="grimoire-text-mini">—</p>
+              </div>
+              <div class="grimoire-section-mini">
+                <span class="grimoire-label-mini"><svg><use href="#i-flask"/></svg> Potion</span>
+                <p id="card-potion-txt" class="grimoire-text-mini">—</p>
+              </div>
+            </div>
+
+            <div class="hero-sheet-visual" id="hero-sheet-visual" aria-hidden="true"></div>
+
+            <div class="stage-actions">
+              <button class="btn btn-primary" id="btn-randomize" data-tooltip="Look aléatoire"><svg><use href="#i-shuffle"/></svg><span>Aléatoire</span></button>
+              <button class="btn btn-gold" id="btn-apply-class-preset" data-tooltip="Appliquer le profil de classe"><svg><use href="#i-sparkles"/></svg><span>Profil Classe</span></button>
+              <button class="btn btn-quiet" id="btn-export-png" data-tooltip="Exporter en PNG"><svg><use href="#i-image"/></svg><span>Carte PNG</span></button>
+              <button class="btn btn-primary" id="btn-save-hero" data-tooltip="Inscrire au registre"><svg><use href="#i-save"/></svg><span>Inscrire</span></button>
+            </div>
+          </div>
+        </aside>
+
+        <!-- COLONNE DROITE : ÉDITEUR -->
+        <main class="editor-column">
+          <header class="forge-heading">
+            <h1>Forge ton Aventurier</h1>
+            <p class="forge-sub">Apparence, classe, attributs et grimoire — chaque choix compte.</p>
+            <div class="completion-badge" id="editor-completion" aria-label="Progression de la fiche">
+              <svg class="completion-ring" viewBox="0 0 52 52"><circle class="completion-track" cx="26" cy="26" r="20" fill="none"/><circle class="completion-progress" cx="26" cy="26" r="20" fill="none"/></svg>
+              <span class="completion-text">0%</span>
+            </div>
+          </header>
+
+          <!-- ONGLETS ÉDITEUR -->
+          <nav class="editor-tabs" role="tablist" aria-label="Sections de l'éditeur">
+            <button role="tab" class="editor-tab is-active" data-tab="identity" aria-selected="true"><svg><use href="#i-crown"/></svg> Identité</button>
+            <button role="tab" class="editor-tab" data-tab="appearance" aria-selected="false"><svg><use href="#i-sparkles"/></svg> Apparence</button>
+            <button role="tab" class="editor-tab" data-tab="attributes" aria-selected="false"><svg><use href="#i-bolt"/></svg> Attributs</button>
+            <button role="tab" class="editor-tab" data-tab="grimoire" aria-selected="false"><svg><use href="#i-scroll"/></svg> Grimoire</button>
+          </nav>
+
+          <!-- PANNEAU IDENTITÉ -->
+          <div class="panel is-active" id="panel-identity" role="tabpanel" aria-labelledby="tab-identity">
+            <header class="panel-head">
+              <h2>Identité & Classe</h2>
+              <p>Ton nom, ta guilde, ton archétype — ce que les autres verront au Hall.</p>
+            </header>
+
+            <div class="field-grid">
+              <div class="field">
+                <label for="hero-name">Nom du Héros</label>
+                <input type="text" id="hero-name" maxlength="24" placeholder="Sire Valérian" autocomplete="off">
+              </div>
+              <div class="field">
+                <label for="hero-guild">Guilde / Équipe</label>
+                <input type="text" id="hero-guild" maxlength="28" placeholder="Projet Fil Rouge #03" autocomplete="off">
+              </div>
+            </div>
+
+            <fieldset class="class-grid" id="class-grid" aria-labelledby="class-legend">
+              <legend id="class-legend">Classe d'Équipe</legend>
+              <div class="class-card" data-class="paladin" tabindex="0" role="radio" aria-checked="false">
+                <div class="class-icon" style="--class-color:#e4bf70"><svg><use href="#i-shield"/></svg></div>
+                <div class="class-info">
+                  <strong>Paladin</strong>
+                  <span class="class-role">Le Bâtisseur</span>
+                  <span class="class-spec">Cadrage & Livrables</span>
+                </div>
+                <div class="class-preview">Armure de plates dorée</div>
+              </div>
+              <div class="class-card" data-class="ranger" tabindex="0" role="radio" aria-checked="false">
+                <div class="class-icon" style="--class-color:#4dc397"><svg><use href="#i-compass"/></svg></div>
+                <div class="class-info">
+                  <strong>Rôdeur</strong>
+                  <span class="class-role">L'Éclaireur</span>
+                  <span class="class-spec">Défrichage solo & tech</span>
+                </div>
+                <div class="class-preview">Cape & harnais de cuir</div>
+              </div>
+              <div class="class-card" data-class="bard" tabindex="0" role="radio" aria-checked="false">
+                <div class="class-icon" style="--class-color:#b389ff"><svg><use href="#i-mask"/></svg></div>
+                <div class="class-info">
+                  <strong>Barde</strong>
+                  <span class="class-role">L'Idéateur</span>
+                  <span class="class-spec">Pitch & Créativité</span>
+                </div>
+                <div class="class-preview">Doublet de velours brodé</div>
+              </div>
+              <div class="class-card" data-class="alchemist" tabindex="0" role="radio" aria-checked="false">
+                <div class="class-icon" style="--class-color:#5ccde2"><svg><use href="#i-flask"/></svg></div>
+                <div class="class-info">
+                  <strong>Alchimiste</strong>
+                  <span class="class-role">Le Finisseur</span>
+                  <span class="class-spec">Rigueur UX & Débug</span>
+                </div>
+                <div class="class-preview">Tablier cuir & fioles</div>
+              </div>
+            </fieldset>
+
+            <div class="field">
+              <label for="hero-title">Titre Honorifique / Devise</label>
+              <input type="text" id="hero-title" maxlength="45" placeholder="Le Bâtisseur Méthodique" autocomplete="off">
+            </div>
+          </div>
+
+          <!-- PANNEAU APPARENCE -->
+          <div class="panel" id="panel-appearance" role="tabpanel" aria-labelledby="tab-appearance" hidden>
+            <header class="panel-head">
+              <h2>Atelier d'Apparence</h2>
+              <p>Chaque calque se met à jour en temps réel sur le portrait.</p>
+              <button class="btn btn-ghost" id="btn-random-appearance"><svg><use href="#i-shuffle"/></svg> Look aléatoire</button>
+            </header>
+
+            <div class="subtabs" role="tablist" aria-label="Catégories d'apparence">
+              <button role="tab" class="subtab is-active" data-subtab="body" aria-selected="true">Morphologie</button>
+              <button role="tab" class="subtab" data-subtab="face" aria-selected="false">Visage</button>
+              <button role="tab" class="subtab" data-subtab="hair" aria-selected="false">Cheveux</button>
+              <button role="tab" class="subtab" data-subtab="gear" aria-selected="false">Équipement</button>
+              <button role="tab" class="subtab" data-subtab="backdrop" aria-selected="false">Décor</button>
+            </div>
+
+            <!-- SOUS-ONGLET MORPHOLOGIE -->
+            <div class="subpanel is-active" id="sub-body" role="tabpanel" aria-labelledby="subtab-body">
+              <div class="control-group">
+                <label class="control-label">Peuple <span class="control-value" id="val-race">Humain</span></label>
+                <div class="option-grid option-grid--races" id="race-grid" role="radiogroup" aria-label="Choix du peuple"></div>
+              </div>
+              <div class="control-group">
+                <label class="control-label">Carnation <span class="control-value" id="val-skin">Pêche</span></label>
+                <div class="swatch-grid swatch-grid--skin" id="skin-grid" role="radiogroup" aria-label="Teinte de peau"></div>
+              </div>
+              <div class="control-group">
+                <label class="control-label">Corpulence <span class="control-value" id="val-build">Moyenne</span></label>
+                <div class="option-grid option-grid--chips" id="build-grid" role="radiogroup" aria-label="Corpulence"></div>
+              </div>
+              <div class="control-group">
+                <label class="control-label">Taille <span class="control-value" id="val-height">Standard</span></label>
+                <div class="option-grid option-grid--chips" id="height-grid" role="radiogroup" aria-label="Taille"></div>
+              </div>
+              <div class="control-group">
+                <label class="control-label">Posture <span class="control-value" id="val-posture">Droit</span></label>
+                <div class="option-grid option-grid--chips" id="posture-grid" role="radiogroup" aria-label="Posture"></div>
+              </div>
+            </div>
+
+            <!-- SOUS-ONGLET VISAGE -->
+            <div class="subpanel" id="sub-face" role="tabpanel" aria-labelledby="subtab-face" hidden>
+              <div class="control-group">
+                <label class="control-label">Forme du visage <span class="control-value" id="val-face">Classique</span></label>
+                <div class="option-grid option-grid--chips" id="face-grid" role="radiogroup" aria-label="Forme du visage"></div>
+              </div>
+              <div class="control-group">
+                <label class="control-label">Yeux <span class="control-value" id="val-eyes">Ambré</span></label>
+                <div class="swatch-grid swatch-grid--eye" id="eye-grid" role="radiogroup" aria-label="Couleur des yeux"></div>
+              </div>
+              <div class="control-group">
+                <label class="control-label">Expression <span class="control-value" id="val-expression">Déterminé</span></label>
+                <div class="option-grid option-grid--chips" id="expression-grid" role="radiogroup" aria-label="Expression"></div>
+              </div>
+              <div class="control-group">
+                <label class="control-label">Marques & Cicatrices <span class="control-value" id="val-mark">Aucune</span></label>
+                <div class="option-grid option-grid--chips" id="mark-grid" role="radiogroup" aria-label="Marques faciales"></div>
+              </div>
+              <div class="control-group">
+                <label class="control-label">Pilosité faciale <span class="control-value" id="val-facial-hair">Rasé</span></label>
+                <div class="option-grid option-grid--chips" id="facial-hair-grid" role="radiogroup" aria-label="Pilosité faciale"></div>
+              </div>
+              <div class="control-group">
+                <label class="control-label">Maquillage / Warpaint <span class="control-value" id="val-warpaint">Aucun</span></label>
+                <div class="option-grid option-grid--chips" id="warpaint-grid" role="radiogroup" aria-label="Warpaint"></div>
+              </div>
+            </div>
+
+            <!-- SOUS-ONGLET CHEVEUX -->
+            <div class="subpanel" id="sub-hair" role="tabpanel" aria-labelledby="subtab-hair" hidden>
+              <div class="control-group">
+                <label class="control-label">Coiffure <span class="control-value" id="val-hairstyle">Court Guerrier</span></label>
+                <div class="hair-grid" id="hairstyle-grid" role="radiogroup" aria-label="Coiffure"></div>
+              </div>
+              <div class="control-group">
+                <label class="control-label">Couleur principale <span class="control-value" id="val-hair-color">Brun Sombre</span></label>
+                <div class="swatch-grid swatch-grid--hair" id="hair-color-grid" role="radiogroup" aria-label="Couleur cheveux"></div>
+              </div>
+              <div class="control-group">
+                <label class="control-label">Mèches / Reflets <span class="control-value" id="val-hair-highlight">Aucun</span></label>
+                <div class="swatch-grid swatch-grid--hair" id="hair-highlight-grid" role="radiogroup" aria-label="Reflets cheveux"></div>
+              </div>
+            </div>
+
+            <!-- SOUS-ONGLET ÉQUIPEMENT -->
+            <div class="subpanel" id="sub-gear" role="tabpanel" aria-labelledby="subtab-gear" hidden>
+              <div class="control-group">
+                <label class="control-label">Tenue de classe <span class="control-value" id="val-outfit">Par défaut</span></label>
+                <div class="option-grid option-grid--outfits" id="outfit-grid" role="radiogroup" aria-label="Tenue"></div>
+              </div>
+              <div class="control-group">
+                <label class="control-label">Couvre-chef <span class="control-value" id="val-headgear">Aucun</span></label>
+                <div class="option-grid option-grid--chips" id="headgear-grid" role="radiogroup" aria-label="Couvre-chef"></div>
+              </div>
+              <div class="control-group">
+                <label class="control-label">Artefact en main <span class="control-value" id="val-artifact">Parchemin</span></label>
+                <div class="option-grid option-grid--chips" id="artifact-grid" role="radiogroup" aria-label="Artefact"></div>
+              </div>
+              <div class="control-group">
+                <label class="control-label">Aura magique <span class="control-value" id="val-aura">Aucune</span></label>
+                <div class="option-grid option-grid--auras" id="aura-grid" role="radiogroup" aria-label="Aura"></div>
+              </div>
+              <div class="control-group">
+                <label class="control-label">Cadre de portrait <span class="control-value" id="val-frame">Classique</span></label>
+                <div class="option-grid option-grid--frames" id="frame-grid" role="radiogroup" aria-label="Cadre"></div>
+              </div>
+            </div>
+
+            <!-- SOUS-ONGLET DÉCOR -->
+            <div class="subpanel" id="sub-backdrop" role="tabpanel" aria-labelledby="subtab-backdrop" hidden>
+              <div class="control-group">
+                <label class="control-label">Lieu de prédilection <span class="control-value" id="val-backdrop">Forteresse</span></label>
+                <div class="backdrop-grid" id="backdrop-grid" role="radiogroup" aria-label="Arrière-plan"></div>
+              </div>
+              <div class="control-group">
+                <label class="control-label">Ambiance lumineuse <span class="control-value" id="val-lighting">Naturelle</span></label>
+                <div class="option-grid option-grid--chips" id="lighting-grid" role="radiogroup" aria-label="Éclairage"></div>
+              </div>
+              <div class="control-group">
+                <label class="control-label">Particules <span class="control-value" id="val-particles">Étincelles</span></label>
+                <div class="option-grid option-grid--chips" id="particles-grid" role="radiogroup" aria-label="Particules"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- PANNEAU ATTRIBUTS -->
+          <div class="panel" id="panel-attributes" role="tabpanel" aria-labelledby="tab-attributes" hidden>
+            <header class="panel-head">
+              <h2>Attributs de l'Aventurier</h2>
+              <p>4 jauges de 1 à 5. Elles guident tes équipiers sur ton style de travail.</p>
+            </header>
+
+            <div class="stats-layout">
+              <div class="stat-cards">
+                <div class="stat-card" data-stat="social">
+                  <div class="stat-head"><svg class="stat-icon" style="--stat-color:#78aaff"><use href="#i-users"/></svg><strong>Mana Social</strong></div>
+                  <div class="stat-slider-wrap">
+                    <input type="range" id="stat-social" min="1" max="5" value="3" aria-label="Mana Social">
+                    <output class="stat-value" for="stat-social">3</output>
+                  </div>
+                  <p class="stat-desc" id="desc-social"></p>
+                  <div class="stat-polarity"><span class="polarity-low" id="pol-social-low">Ermite</span><span class="polarity-high" id="pol-social-high">Taverne</span></div>
+                  <div class="stat-display">
+                    <span id="disp-stat-social" class="font-mono text-amber-400 font-bold">3/5</span>
+                    <div id="bar-stat-social" class="stat-bar" style="width: 60%"></div>
+                  </div>
+                </div>
+                <div class="stat-card" data-stat="speed">
+                  <div class="stat-head"><svg class="stat-icon" style="--stat-color:#e4bf70"><use href="#i-bolt"/></svg><strong>Initiative</strong></div>
+                  <div class="stat-slider-wrap">
+                    <input type="range" id="stat-speed" min="1" max="5" value="3" aria-label="Initiative">
+                    <output class="stat-value" for="stat-speed">3</output>
+                  </div>
+                  <p class="stat-desc" id="desc-speed"></p>
+                  <div class="stat-polarity"><span class="polarity-low" id="pol-speed-low">Contemplatif</span><span class="polarity-high" id="pol-speed-high">Fusée</span></div>
+                  <div class="stat-display">
+                    <span id="disp-stat-speed" class="font-mono text-amber-400 font-bold">3/5</span>
+                    <div id="bar-stat-speed" class="stat-bar" style="width: 60%"></div>
+                  </div>
+                </div>
+                <div class="stat-card" data-stat="channel">
+                  <div class="stat-head"><svg class="stat-icon" style="--stat-color:#4dc397"><use href="#i-scroll"/></svg><strong>Canal Préféré</strong></div>
+                  <div class="stat-slider-wrap">
+                    <input type="range" id="stat-channel" min="1" max="5" value="3" aria-label="Canal">
+                    <output class="stat-value" for="stat-channel">3</output>
+                  </div>
+                  <p class="stat-desc" id="desc-channel"></p>
+                  <div class="stat-polarity"><span class="polarity-low" id="pol-channel-low">Écrit</span><span class="polarity-high" id="pol-channel-high">Vocal</span></div>
+                  <div class="stat-display">
+                    <span id="disp-stat-channel" class="font-mono text-amber-400 font-bold">3/5</span>
+                    <div id="bar-stat-channel" class="stat-bar" style="width: 60%"></div>
+                  </div>
+                </div>
+                <div class="stat-card" data-stat="chaos">
+                  <div class="stat-head"><svg class="stat-icon" style="--stat-color:#b389ff"><use href="#i-wind"/></svg><strong>Tolérance aux Pivots</strong></div>
+                  <div class="stat-slider-wrap">
+                    <input type="range" id="stat-chaos" min="1" max="5" value="3" aria-label="Tolérance aux Pivots">
+                    <output class="stat-value" for="stat-chaos">3</output>
+                  </div>
+                  <p class="stat-desc" id="desc-chaos"></p>
+                  <div class="stat-polarity"><span class="polarity-low" id="pol-chaos-low">Rempart</span><span class="polarity-high" id="pol-chaos-high">Tempête</span></div>
+                  <div class="stat-display">
+                    <span id="disp-stat-chaos" class="font-mono text-amber-400 font-bold">3/5</span>
+                    <div id="bar-stat-chaos" class="stat-bar" style="width: 60%"></div>
+                  </div>
+                </div>
+              </div>
+
+              <aside class="radar-card">
+                <div class="radar-head">
+                  <h3>Équilibre d'Aura</h3>
+                  <p class="radar-caption">Visualise ton profil d'un coup d'œil</p>
+                </div>
+                <div class="radar-wrap">
+                  <canvas id="radar-canvas" width="280" height="280" aria-label="Graphique radar des 4 attributs"></canvas>
+                </div>
+                <!-- Stat display bars (for hero card rendering) -->
+                <div class="stat-displays" style="display:none">
+                  <div>
+                    <span id="disp-stat-social" class="font-mono text-amber-400 font-bold">3/5</span>
+                    <div id="bar-stat-social" class="stat-bar" style="width: 60%"></div>
+                  </div>
+                  <div>
+                    <span id="disp-stat-speed" class="font-mono text-amber-400 font-bold">3/5</span>
+                    <div id="bar-stat-speed" class="stat-bar" style="width: 60%"></div>
+                  </div>
+                  <div>
+                    <span id="disp-stat-channel" class="font-mono text-amber-400 font-bold">3/5</span>
+                    <div id="bar-stat-channel" class="stat-bar" style="width: 60%"></div>
+                  </div>
+                  <div>
+                    <span id="disp-stat-chaos" class="font-mono text-amber-400 font-bold">3/5</span>
+                    <div id="bar-stat-chaos" class="stat-bar" style="width: 60%"></div>
+                  </div>
+                </div>
+                <button class="btn btn-ghost" id="btn-roll-dice" style="margin-top:12px"><svg><use href="#i-dice"/></svg> Dé du Destin (Random)</button>
+              </aside>
+            </div>
+          </div>
+
+          <!-- PANNEAU GRIMOIRE -->
+          <div class="panel" id="panel-grimoire" role="tabpanel" aria-labelledby="tab-grimoire" hidden>
+            <header class="panel-head">
+              <h2>Grimoire de Survie</h2>
+              <p>Ton Don, ta Kryptonite, ta Potion — le manuel d'utilisation pour tes alliés.</p>
+            </header>
+
+            <div class="grimoire-section">
+              <label class="grimoire-label"><svg class="grimoire-icon" style="--icon-color:#f59e0b"><use href="#i-sun"/></svg> Don Ultime (Zone de Génie)</label>
+              <textarea id="grimoire-ultimate" rows="3" maxlength="180" placeholder="Ce qui me met en état de flow absolu…"></textarea>
+              <div class="snippet-chips" data-target="grimoire-ultimate">
+                <button type="button" class="snippet-chip" data-text="Structure les sprints et découpe les tâches en jalons limpides">Cadrage Agile</button>
+                <button type="button" class="snippet-chip" data-text="Débuggage calme & persévérance sous pression">Débug Zen</button>
+                <button type="button" class="snippet-chip" data-text="Synthèse rapide des débats confus en 3 actions nettes">Synthèse Éclair</button>
+                <button type="button" class="snippet-chip" data-text="Veille technologique & vulgarisation d'outils obscurs">Veille Technique</button>
+                <button type="button" class="snippet-chip" data-text="Médiation d'équipe & résolution de conflits">Médiateur</button>
+                <button type="button" class="snippet-chip" data-text="Créativité foisonnante & idées hors des sentiers battus">Idéation Pure</button>
+              </div>
+            </div>
+
+            <div class="grimoire-section">
+              <label class="grimoire-label"><svg class="grimoire-icon" style="--icon-color:#ef4444"><use href="#i-skull"/></svg> Kryptonite (Malus Critique)</label>
+              <textarea id="grimoire-weakness" rows="3" maxlength="180" placeholder="Ce qui draine mon énergie instantanément…"></textarea>
+              <div class="snippet-chips" data-target="grimoire-weakness">
+                <button type="button" class="snippet-chip" data-text="Le silence radio de plus de 12h sans donner de nouvelles">Silence Radio</button>
+                <button type="button" class="snippet-chip" data-text="Les débats de 2 heures sans ordre du jour ni décisions">Réunions Fleuves</button>
+                <button type="button" class="snippet-chip" data-text="Les changements d'objectifs improvisés la veille d'un jalon">Pivots de Nuit</button>
+                <button type="button" class="snippet-chip" data-text="Être interrompu toutes les 15 minutes en plein focus">Ping Incessant</button>
+                <button type="button" class="snippet-chip" data-text="Code poussé sans tests ni review">Yolo Push</button>
+                <button type="button" class="snippet-chip" data-text="Documentation absente ou obsolète">Doc Fantôme</button>
+              </div>
+            </div>
+
+            <div class="grimoire-section">
+              <label class="grimoire-label"><svg class="grimoire-icon" style="--icon-color:#22c55e"><use href="#i-flask"/></svg> Potion d'Apaisement (Mode d'Emploi)</label>
+              <textarea id="grimoire-potion" rows="3" maxlength="180" placeholder="Comment me parler pour me désamorcer…"></textarea>
+              <div class="snippet-chips" data-target="grimoire-potion">
+                <button type="button" class="snippet-chip" data-text="Par message direct avec les 2 actions concrètes attendues">Écrit Structuré</button>
+                <button type="button" class="snippet-chip" data-text="Dis-le-moi directement en tête-à-tête autour d'un café calme">Point Café</button>
+                <button type="button" class="snippet-chip" data-text="Laisse-moi 30 minutes pour digérer avant d'en rediscuter à froid">30 Min Digestion</button>
+                <button type="button" class="snippet-chip" data-text="Aide-moi à redécouper ma tâche en sous-objectifs simples">Redécoupage</button>
+                <button type="button" class="snippet-chip" data-text="Valide ma compréhension avant que je ne commence">Check Compréhension</button>
+                <button type="button" class="snippet-chip" data-text="Fais-moi un retour précis sur ce qui bloque, pas une critique vague">Feedback Concret</button>
+              </div>
+            </div>
+
+            <div class="grimoire-footer">
+              <div class="grimoire-preview">
+                <strong>Aperçu Markdown :</strong>
+                <pre id="markdown-preview">—</pre>
+              </div>
+              <div class="grimoire-footer-actions">
+                <button class="btn btn-quiet" id="btn-copy-markdown"><svg><use href="#i-copy"/></svg> Copier Markdown</button>
+                <button class="btn btn-primary" id="btn-share-hero"><svg><use href="#i-share"/></svg> Partager</button>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+    </section>
+
+    <!-- -------------------- VUE GUILDE (HALL) -------------------- -->
+    <section class="view" data-view="guild" role="region" aria-label="Hall de Guilde" hidden>
+      <header class="guild-header">
+        <div>
+          <h2><svg><use href="#i-users"/></svg> Hall de Guilde</h2>
+          <p>Consulte les fiches des aventuriers inscrits pour adapter votre collaboration.</p>
+        </div>
+        <button class="btn btn-gold" id="btn-back-forge"><svg><use href="#i-hammer"/></svg> Retour à la Forge</button>
+      </header>
+
+      <div class="guild-toolbar">
+        <div class="search-field" role="search">
+          <svg><use href="#i-search"/></svg>
+          <input type="search" id="guild-search" placeholder="Rechercher un aventurier, une guilde, une classe…" aria-label="Recherche">
+        </div>
+        <div class="filter-chips" role="group" aria-label="Filtres">
+          <button class="filter-chip is-active" data-filter="all" aria-pressed="true">Tous</button>
+          <button class="filter-chip" data-filter="paladin" aria-pressed="false"><svg class="class-dot" style="--class-color:#e4bf70"><use href="#i-shield"/></svg> Paladins</button>
+          <button class="filter-chip" data-filter="ranger" aria-pressed="false"><svg class="class-dot" style="--class-color:#4dc397"><use href="#i-compass"/></svg> Rôdeurs</button>
+          <button class="filter-chip" data-filter="bard" aria-pressed="false"><svg class="class-dot" style="--class-color:#b389ff"><use href="#i-mask"/></svg> Barde</button>
+          <button class="filter-chip" data-filter="alchemist" aria-pressed="false"><svg class="class-dot" style="--class-color:#5ccde2"><use href="#i-flask"/></svg> Alchimistes</button>
+          <button class="filter-chip" data-filter="legends" aria-pressed="false"><svg><use href="#i-crown"/></svg> Légendes</button>
+        </div>
+      </div>
+
+      <div class="guild-grid" id="guild-grid" role="list" aria-label="Registre des aventuriers"></div>
+
+      <div class="empty-state" id="empty-state" hidden>
+        <svg class="empty-rune" aria-hidden="true"><use href="#i-gem"/></svg>
+        <h3>Aucun aventurier</h3>
+        <p>Le Hall est silencieux. Forge ton premier héros pour commencer le registre.</p>
+        <button class="btn btn-gold" id="btn-new-first-hero"><svg><use href="#i-plus"/></svg> Forger mon Héros</button>
+      </div>
+    </section>
+  </div>
+
+  <!-- ==================== BARRE DE NAVIGATION MOBILE (Bottom Nav) ==================== -->
+  <nav class="bottom-nav" role="navigation" aria-label="Navigation principale mobile">
+    <button class="bottom-tab is-active" data-view="forge" aria-label="Forge"><svg><use href="#i-hammer"/></svg><span>Forge</span></button>
+    <button class="bottom-tab" data-view="guild" aria-label="Guilde"><svg><use href="#i-users"/></svg><span>Guilde</span></button>
+    <button class="bottom-dice" id="btn-dice-bottom" aria-label="Dé du Destin" title="Dé du Destin"><svg><use href="#i-dice"/></svg></button>
+  </nav>
+
+  <!-- ==================== MODAL PROTOCOLE ==================== -->
+  <dialog class="modal" id="modal-protocol" aria-labelledby="protocol-title" role="dialog">
+    <div class="modal-card">
+      <header class="modal-head">
+        <h3 id="protocol-title"><svg><use href="#i-scroll"/></svg> Protocole d'Atelier — Team Building 45 min</h3>
+        <button class="modal-close" aria-label="Fermer"><svg><use href="#i-close"/></svg></button>
+      </header>
+      <div class="modal-body">
+        <div class="protocol-step">
+          <span class="protocol-num">1</span>
+          <div>
+            <strong>La Forge (10 min)</strong>
+            <p>Chacun forge son personnage sur son téléphone ou ordi et génère son Grimoire complet.</p>
+          </div>
+        </div>
+        <div class="protocol-step">
+          <span class="protocol-num">2</span>
+          <div>
+            <strong>Le Speed-Dating (20 min)</strong>
+            <p>En binômes <em>mélangés hors de leur groupe de projet</em>, chacun lit sa Kryptonite et sa Potion en 2 min chrono.</p>
+          </div>
+        </div>
+        <div class="protocol-step">
+          <span class="protocol-num">3</span>
+          <div>
+            <strong>Le Pacte d'Équipe (15 min)</strong>
+            <p>Retour en groupe de projet : partage des fiches sur Slack/Discord et écriture des 3 règles d'or de travail.</p>
+          </div>
+        </div>
+        <div class="protocol-monsters">
+          <strong><svg><use href="#i-skull"/></svg> Les 3 Monstres de Bootcamp à aborder :</strong>
+          <ul>
+            <li><b>Le Golem Solitaire :</b> Celui qui prend tout sur son dos la nuit sans déléguer et finit aigri.</li>
+            <li><b>Le Spectre du Brouillard :</b> Celui qui n'ose pas dire qu'il est paumé et disparaît plusieurs jours.</li>
+            <li><b>L'Hydre du Débat Infini :</b> Le groupe qui discute 3 heures sur une couleur sans coder.</li>
+          </ul>
+        </div>
+      </div>
+      <footer class="modal-foot">
+        <button class="btn btn-gold" id="protocol-close">C'est Compris !</button>
+      </footer>
+    </div>
+  </dialog>
+
+  <!-- ==================== MODAL CONFIRMATION GÉNÉRIQUE ==================== -->
+  <dialog class="modal" id="modal-confirm" aria-labelledby="confirm-title" role="dialog">
+    <div class="modal-card modal-card--confirm">
+      <h3 id="confirm-title">Confirmer</h3>
+      <p id="confirm-text"></p>
+      <div class="modal-foot">
+        <button class="btn btn-quiet" id="confirm-cancel">Annuler</button>
+        <button class="btn btn-danger" id="confirm-ok">Confirmer</button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- ==================== MODAL HÉROS (DÉTAIL / ACTIONS) ==================== -->
+  <dialog class="modal" id="modal-hero" aria-labelledby="hero-modal-title" role="dialog">
+    <div class="modal-card modal-card--hero">
+      <button class="modal-close" aria-label="Fermer"><svg><use href="#i-close"/></svg></button>
+      <div class="hero-modal-visual" id="hero-modal-visual"></div>
+      <div class="hero-modal-info">
+        <h3 id="hero-modal-title">—</h3>
+        <p class="hero-modal-sub" id="hero-modal-sub">—</p>
+        <div class="hero-modal-stats" id="hero-modal-stats"></div>
+        <div class="hero-modal-spells" id="hero-modal-spells"></div>
+      </div>
+      <div class="hero-modal-actions" id="hero-modal-actions"></div>
+    </div>
+  </dialog>
+
+  <!-- ==================== TOAST / NOTIFICATION ==================== -->
+  <div class="toast-stack" id="toast-stack" aria-live="polite" aria-atomic="true"></div>
+
+  <!-- ==================== SCRIPTS ==================== -->
+</body>
+</html>

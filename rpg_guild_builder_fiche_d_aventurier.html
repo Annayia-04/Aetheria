@@ -1,0 +1,2226 @@
+<!DOCTYPE html>
+<html lang="fr" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RPG Guild Builder : Fiche d'Aventurier</title>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Polices Google : Cinzel Decorative, Cinzel, Press Start 2P & Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@500;700;800&family=Press+Start+2P&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Font Awesome 6.5 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <!-- html2canvas pour la capture HD de la carte de héros -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+  <!-- Canvas Confetti pour les quêtes validées -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            fantasy: ['"Cinzel Decorative"', 'serif'],
+            rpg: ['"Cinzel"', 'serif'],
+            pixel: ['"Press Start 2P"', 'monospace'],
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+          },
+          colors: {
+            guildDark: '#080a10',
+            panelDark: '#101422',
+            goldBorder: '#d4af37',
+            arcaneViolet: '#8b5cf6',
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Texture & Ambiance Écran de Jeu Vidéo */
+    body {
+      background-color: #07090e;
+      background-image: 
+        radial-gradient(circle at 50% 10%, rgba(212, 175, 55, 0.12) 0%, transparent 60%),
+        radial-gradient(circle at 10% 90%, rgba(139, 92, 246, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 90% 90%, rgba(16, 185, 129, 0.08) 0%, transparent 50%),
+        linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+      background-size: 100% 100%, 100% 100%, 100% 100%, 32px 32px, 32px 32px;
+      background-attachment: fixed;
+    }
+
+    /* Cadres et bordures médiévales ciselées façon RPG UI */
+    .rpg-frame {
+      border: 2px solid #947124;
+      box-shadow: 
+        0 0 0 1px #221c10,
+        inset 0 0 0 1px #2a2214,
+        0 8px 30px rgba(0, 0, 0, 0.8),
+        inset 0 0 20px rgba(212, 175, 55, 0.08);
+      position: relative;
+    }
+
+    .rpg-frame::before {
+      content: '';
+      position: absolute;
+      top: -4px; left: -4px; width: 8px; height: 8px;
+      background: #f59e0b;
+      box-shadow: 0 0 6px #f59e0b;
+    }
+    .rpg-frame::after {
+      content: '';
+      position: absolute;
+      bottom: -4px; right: -4px; width: 8px; height: 8px;
+      background: #f59e0b;
+      box-shadow: 0 0 6px #f59e0b;
+    }
+
+    .rpg-btn {
+      background: linear-gradient(180deg, #2a3348 0%, #151b2a 100%);
+      border: 1px solid #785a28;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.15), 0 3px 6px rgba(0,0,0,0.5);
+      transition: all 0.15s ease-out;
+    }
+    .rpg-btn:hover {
+      background: linear-gradient(180deg, #37435f 0%, #1c2438 100%);
+      border-color: #d4af37;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), 0 0 12px rgba(212, 175, 55, 0.35);
+      transform: translateY(-1px);
+    }
+    .rpg-btn:active {
+      transform: translateY(1px);
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.8);
+    }
+
+    .rpg-btn-gold {
+      background: linear-gradient(180deg, #f59e0b 0%, #b45309 100%);
+      border: 1px solid #fef08a;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.4), 0 0 15px rgba(245, 158, 11, 0.4);
+      color: #050608;
+      font-weight: 800;
+    }
+    .rpg-btn-gold:hover {
+      background: linear-gradient(180deg, #fbbf24 0%, #d97706 100%);
+      box-shadow: inset 0 1px 0 #fff, 0 0 22px rgba(251, 191, 36, 0.65);
+      transform: translateY(-1px);
+    }
+
+    /* Animation idle de respiration du Héros */
+    @keyframes heroBreath {
+      0%, 100% { transform: translateY(0px) scale(1); }
+      50% { transform: translateY(-4px) scale(1.008); }
+    }
+    .hero-idle {
+      animation: heroBreath 4s ease-in-out infinite;
+    }
+
+    /* Halo lumineux magique */
+    .magic-glow {
+      box-shadow: 0 0 35px -5px var(--glow-color, rgba(212, 175, 55, 0.4));
+    }
+
+    /* Range slider RPG */
+    input[type=range] {
+      -webkit-appearance: none;
+      background: #0d121e;
+      height: 8px;
+      border-radius: 4px;
+      border: 1px solid #584420;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      height: 22px;
+      width: 22px;
+      border-radius: 4px;
+      background: radial-gradient(circle, #fde047 30%, #b45309 100%);
+      cursor: pointer;
+      box-shadow: 0 0 10px #f59e0b;
+      border: 2px solid #ffffff;
+      transition: transform 0.15s ease;
+    }
+    input[type=range]::-webkit-slider-thumb:hover {
+      transform: scale(1.2) rotate(45deg);
+    }
+
+    /* Scrollbars thématiques */
+    ::-webkit-scrollbar {
+      width: 7px;
+      height: 7px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0b0f19;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #503d1c;
+      border-radius: 3px;
+      border: 1px solid rgba(212, 175, 55, 0.3);
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #b45309;
+    }
+  </style>
+</head>
+<body class="text-slate-200 font-sans min-h-screen flex flex-col antialiased selection:bg-amber-500 selection:text-black">
+
+  <!-- ==================== BARRE SUPÉRIEURE DE JEU (HUD) ==================== -->
+  <header class="border-b border-amber-600/30 bg-[#0a0d16]/90 backdrop-blur-md sticky top-0 z-40 px-3 lg:px-6 py-2.5">
+    <div class="max-w-7xl mx-auto flex items-center justify-between gap-3">
+      
+      <!-- Titre & Lore -->
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-lg bg-gradient-to-b from-amber-400 to-amber-700 p-0.5 shadow-md shadow-amber-500/20 flex items-center justify-center shrink-0">
+          <div class="w-full h-full bg-[#0d121f] rounded-[6px] flex items-center justify-center">
+            <i class="fa-solid fa-dungeon text-amber-400 text-lg"></i>
+          </div>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="font-fantasy tracking-wider text-base sm:text-lg text-amber-400 font-bold leading-tight drop-shadow">
+              RPG Guild Builder
+            </h1>
+            <span class="font-pixel text-[8px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40 hidden sm:inline">
+              PROMO EDITION
+            </span>
+          </div>
+          <p class="text-[11px] text-slate-400 hidden md:block">Créateur de Héros & Manuel d'Équipe du Bootcamp</p>
+        </div>
+      </div>
+
+      <!-- Navigation d'Écran : Forge vs Hall de Guilde -->
+      <div class="flex items-center bg-[#07090e] p-1 rounded-xl border border-amber-600/30">
+        <button onclick="setView('forge')" id="nav-btn-forge" class="px-3 py-1.5 rounded-lg text-xs font-rpg font-bold transition-all text-amber-400 bg-amber-500/20 border border-amber-500/40 flex items-center gap-1.5 shadow-sm">
+          <i class="fa-solid fa-hammer"></i>
+          <span>Forge du Héros</span>
+        </button>
+        <button onclick="setView('hall')" id="nav-btn-hall" class="px-3 py-1.5 rounded-lg text-xs font-rpg font-bold transition-all text-slate-400 hover:text-slate-200 flex items-center gap-1.5">
+          <i class="fa-solid fa-users-viewfinder"></i>
+          <span>Hall de Guilde</span>
+          <span id="guild-badge-count" class="ml-1 text-[10px] font-mono px-1.5 py-0.2 rounded-full bg-slate-800 text-amber-300">3</span>
+        </button>
+      </div>
+
+      <!-- Outils Audio & Règles -->
+      <div class="flex items-center gap-2">
+        <!-- Dé du Destin (Randomizer) -->
+        <button onclick="rollFateDice()" id="btn-dice" class="rpg-btn px-3 py-1.5 rounded-lg text-xs font-rpg font-bold text-amber-300 flex items-center gap-1.5" title="Générer un Héros Aléatoire (Dé du Destin)">
+          <i class="fa-solid fa-dice-d20 text-amber-400 text-sm animate-pulse"></i>
+          <span class="hidden sm:inline">Dé du Destin</span>
+        </button>
+
+        <!-- Toggle Sonore -->
+        <button id="btn-sound-toggle" class="w-8 h-8 rounded-lg bg-[#0e1320] border border-amber-500/30 text-amber-400 flex items-center justify-center hover:bg-slate-800 transition-all text-xs" title="Son ON/OFF">
+          <i id="sound-icon" class="fa-solid fa-volume-high"></i>
+        </button>
+
+        <!-- Protocole Atelier Modal -->
+        <button onclick="toggleModal('modal-protocol')" class="w-8 h-8 rounded-lg bg-[#0e1320] border border-amber-500/30 text-amber-300 flex items-center justify-center hover:bg-slate-800 transition-all text-xs" title="Règles du Team-Building">
+          <i class="fa-solid fa-scroll"></i>
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- ==================== ÉCRAN 1 : LA FORGE DU HÉROS (CHARACTER CREATOR) ==================== -->
+  <main id="view-forge" class="max-w-7xl mx-auto p-3 sm:p-5 lg:p-6 flex-1 w-full grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+
+    <!-- COLONNE GAUCHE : APERÇU DU HÉROS & CARTE RPG (5 colonnes) -->
+    <div class="lg:col-span-5 space-y-4">
+      
+      <!-- Actions d'Export Rapide -->
+      <div class="flex items-center justify-between bg-[#0e1322] p-2 rounded-xl border border-amber-600/30">
+        <span class="text-xs font-rpg font-bold text-amber-400 flex items-center gap-1.5 px-2">
+          <i class="fa-solid fa-id-card-clip"></i> Carte d'Aventurier
+        </span>
+        <div class="flex items-center gap-1.5">
+          <button onclick="copyMarkdownGrimoire()" class="rpg-btn px-2.5 py-1 rounded-lg text-[11px] font-semibold text-slate-200 flex items-center gap-1" title="Copier le format texte pour Slack/Discord">
+            <i class="fa-solid fa-copy text-amber-400"></i> Copier
+          </button>
+          <button onclick="exportPNG()" id="btn-export-png" class="rpg-btn-gold px-3 py-1 rounded-lg text-[11px] flex items-center gap-1">
+            <i class="fa-solid fa-file-arrow-down"></i> PNG
+          </button>
+          <button onclick="saveCharacterToGuild()" class="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-bold text-[11px] font-rpg flex items-center gap-1 shadow-md shadow-emerald-700/30">
+            <i class="fa-solid fa-floppy-disk"></i> Enregistrer
+          </button>
+        </div>
+      </div>
+
+      <!-- CARTE DE HÉROS COMPLETE (Capturée par html2canvas) -->
+      <div id="character-card-wrapper" class="relative mx-auto w-full max-w-[430px]">
+        
+        <div id="character-card" class="rpg-frame rounded-2xl p-4 sm:p-5 bg-gradient-to-b from-[#161c2e] via-[#0d1220] to-[#080b12] text-slate-100 flex flex-col justify-between overflow-hidden">
+          
+          <!-- En-tête de carte : Rang, Nom et Guilde -->
+          <div class="border-b border-amber-500/30 pb-2.5 relative z-10 flex items-start justify-between gap-2">
+            <div class="min-w-0 flex-1">
+              <div class="flex items-center gap-1.5">
+                <span class="font-pixel text-[8px] text-amber-400 px-1 py-0.5 rounded bg-amber-500/10 border border-amber-500/30">LVL 1</span>
+                <span id="card-guild-txt" class="text-[10px] font-mono tracking-widest text-slate-400 uppercase truncate">
+                  PROJET FIL ROUGE #03
+                </span>
+              </div>
+              <h2 id="card-name-txt" class="font-fantasy text-xl sm:text-2xl font-bold text-amber-300 truncate drop-shadow-md">
+                Sire Valérian
+              </h2>
+              <p id="card-title-txt" class="text-[11px] text-amber-200/90 italic font-serif truncate">
+                Le Bâtisseur Méthodique
+              </p>
+            </div>
+
+            <!-- Badge de classe cliquable -->
+            <div id="card-class-badge" class="px-2.5 py-1.5 rounded-xl border flex flex-col items-center justify-center shrink-0 min-w-[70px] bg-amber-500/15 border-amber-500/60 text-amber-300">
+              <i id="card-class-icon" class="fa-solid fa-shield-halved text-base mb-0.5"></i>
+              <span id="card-class-name" class="font-rpg font-bold text-[10px] uppercase">Paladin</span>
+            </div>
+          </div>
+
+          <!-- VITRINE DU HÉROS (AVATAR MODULAIRE INTERACTIF + DÉCOR + SOCLE) -->
+          <div class="relative my-3 rounded-xl border border-amber-500/30 overflow-hidden bg-slate-950 p-2 flex flex-col items-center">
+            
+            <!-- Décor de fond dynamique -->
+            <div id="avatar-backdrop" class="absolute inset-0 opacity-40 transition-all duration-500 pointer-events-none">
+              <!-- Rendu de background SVG injecté -->
+            </div>
+
+            <!-- Halo magique arrière -->
+            <div id="avatar-glow-ring" class="absolute w-36 h-36 rounded-full blur-2xl opacity-40 pointer-events-none top-8" style="background-color: #f59e0b;"></div>
+
+            <!-- MOTEUR D'AVATAR MODULAIRE SVG -->
+            <div class="relative z-10 w-full max-w-[240px] aspect-[1/1] flex items-center justify-center hero-idle">
+              <svg id="modular-avatar-svg" viewBox="0 0 200 200" class="w-full h-full drop-shadow-[0_10px_15px_rgba(0,0,0,0.8)]">
+                <!-- Calque 0 : Décor / Aura interne -->
+                <g id="layer-aura"></g>
+
+                <!-- Calque 1 : Corps & Vêtement / Armure (Shoulders & Torso) -->
+                <g id="layer-body"></g>
+
+                <!-- Calque 2 : Cou & Tête (Skin Base) -->
+                <g id="layer-head"></g>
+
+                <!-- Calque 3 : Détails faciaux (Cicatrices, Marques, Barbe) -->
+                <g id="layer-face-details"></g>
+
+                <!-- Calque 4 : Yeux & Regard -->
+                <g id="layer-eyes"></g>
+
+                <!-- Calque 5 : Cheveux & Coiffure -->
+                <g id="layer-hair"></g>
+
+                <!-- Calque 6 : Accessoire / Objet tenu -->
+                <g id="layer-accessory"></g>
+              </svg>
+            </div>
+
+            <!-- Socle d'Aventurier RPG -->
+            <div class="relative z-10 w-44 h-4 bg-gradient-to-r from-transparent via-amber-600/40 to-transparent rounded-full blur-[1px] -mt-2"></div>
+            <div class="relative z-10 text-[9px] font-pixel text-amber-400/80 uppercase tracking-widest mt-1">
+              [ <span id="card-spec-txt">Cadrage & Livrables</span> ]
+            </div>
+          </div>
+
+          <!-- SECTION CENTRALE : RADAR CHART DES ATTRIBUTS & STATS -->
+          <div class="grid grid-cols-12 gap-2.5 items-center bg-[#070a12]/80 p-2.5 rounded-xl border border-slate-800 my-1">
+            <div class="col-span-6 flex flex-col items-center justify-center">
+              <span class="text-[9px] font-rpg font-bold text-amber-400 uppercase tracking-widest mb-1 flex items-center gap-1">
+                <i class="fa-solid fa-chart-pie text-[8px]"></i> Équilibre d'Aura
+              </span>
+              <div class="relative w-full aspect-square max-w-[140px]">
+                <canvas id="radarCanvas" width="180" height="180" class="w-full h-full"></canvas>
+              </div>
+            </div>
+
+            <!-- Jauges numériques compactes -->
+            <div class="col-span-6 space-y-1.5 text-[10px]">
+              <div>
+                <div class="flex justify-between text-slate-300 text-[10px]">
+                  <span><i class="fa-solid fa-comments text-blue-400 mr-1"></i>Mana Social</span>
+                  <span id="disp-stat-social" class="font-mono text-amber-400 font-bold">3/5</span>
+                </div>
+                <div class="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden mt-0.5">
+                  <div id="bar-stat-social" class="h-full bg-blue-500" style="width: 60%"></div>
+                </div>
+              </div>
+
+              <div>
+                <div class="flex justify-between text-slate-300 text-[10px]">
+                  <span><i class="fa-solid fa-bolt text-amber-400 mr-1"></i>Initiative</span>
+                  <span id="disp-stat-speed" class="font-mono text-amber-400 font-bold">4/5</span>
+                </div>
+                <div class="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden mt-0.5">
+                  <div id="bar-stat-speed" class="h-full bg-amber-500" style="width: 80%"></div>
+                </div>
+              </div>
+
+              <div>
+                <div class="flex justify-between text-slate-300 text-[10px]">
+                  <span><i class="fa-solid fa-scroll text-emerald-400 mr-1"></i>Canal (Écrit/Oral)</span>
+                  <span id="disp-stat-channel" class="font-mono text-amber-400 font-bold">2/5</span>
+                </div>
+                <div class="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden mt-0.5">
+                  <div id="bar-stat-channel" class="h-full bg-emerald-500" style="width: 40%"></div>
+                </div>
+              </div>
+
+              <div>
+                <div class="flex justify-between text-slate-300 text-[10px]">
+                  <span><i class="fa-solid fa-wind text-purple-400 mr-1"></i>Tolérance Pivot</span>
+                  <span id="disp-stat-chaos" class="font-mono text-amber-400 font-bold">2/5</span>
+                </div>
+                <div class="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden mt-0.5">
+                  <div id="bar-stat-chaos" class="h-full bg-purple-500" style="width: 40%"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- GRIMOIRE DE SURVIE / LE MANUEL UTILISATEUR DÉGUISÉ -->
+          <div class="space-y-1.5 text-xs border-t border-amber-600/30 pt-2.5 mt-1.5">
+            <!-- Sort Passif -->
+            <div class="bg-amber-950/20 border-l-2 border-amber-400 pl-2 py-0.5 rounded-r">
+              <span class="text-[9px] font-rpg font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1">
+                <i class="fa-solid fa-sun"></i> Don Ultime (Zone de Génie)
+              </span>
+              <p id="card-ultimate-txt" class="text-[11px] text-slate-200 line-clamp-2 leading-tight">
+                Structure les sprints et découpe les tâches en jalons limpides.
+              </p>
+            </div>
+
+            <!-- Kryptonite -->
+            <div class="bg-red-950/20 border-l-2 border-red-500 pl-2 py-0.5 rounded-r">
+              <span class="text-[9px] font-rpg font-bold text-red-400 uppercase tracking-wider flex items-center gap-1">
+                <i class="fa-solid fa-skull"></i> Malus Critique (Kryptonite)
+              </span>
+              <p id="card-weakness-txt" class="text-[11px] text-slate-200 line-clamp-2 leading-tight">
+                Le silence de plus de 12h & les changements d'objectifs la veille du jalon.
+              </p>
+            </div>
+
+            <!-- Potion d'Apaisement -->
+            <div class="bg-emerald-950/20 border-l-2 border-emerald-400 pl-2 py-0.5 rounded-r">
+              <span class="text-[9px] font-rpg font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1">
+                <i class="fa-solid fa-flask"></i> Potion d'Apaisement (Mode d'Emploi)
+              </span>
+              <p id="card-potion-txt" class="text-[11px] text-slate-200 line-clamp-2 leading-tight">
+                Par message direct avec les 2 actions concrètes attendues.
+              </p>
+            </div>
+          </div>
+
+          <!-- Watermark & Sceau de Guilde -->
+          <div class="mt-2.5 pt-1.5 border-t border-slate-800/80 flex items-center justify-between text-[8px] font-mono text-slate-500">
+            <span>ID: #BOOTCAMP-<span id="card-unique-id">7742</span></span>
+            <span class="text-amber-500/70 font-rpg"><i class="fa-solid fa-award mr-1"></i>Certifié Fiche d'Aventurier</span>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+
+    <!-- COLONNE DROITE : LE CRÉATEUR DE PERSONNAGE (7 colonnes) -->
+    <div class="lg:col-span-7 space-y-4">
+      
+      <!-- ONGLET DU MENU DE PERSONNALISATION -->
+      <nav class="flex items-center gap-1 p-1 rounded-xl bg-[#0b0e18] border border-amber-600/30 overflow-x-auto">
+        <button onclick="setTab('avatar')" id="tab-btn-avatar" class="tab-btn flex-1 min-w-[105px] py-2 px-2.5 rounded-lg text-xs font-rpg font-bold transition-all text-amber-300 bg-amber-500/20 border border-amber-500/40 flex items-center justify-center gap-1.5 shadow-inner">
+          <i class="fa-solid fa-wand-magic-sparkles"></i> Apparence
+        </button>
+        <button onclick="setTab('archetype')" id="tab-btn-archetype" class="tab-btn flex-1 min-w-[105px] py-2 px-2.5 rounded-lg text-xs font-rpg font-bold transition-all text-slate-400 hover:text-slate-200 flex items-center justify-center gap-1.5">
+          <i class="fa-solid fa-chess-rook"></i> Archétype
+        </button>
+        <button onclick="setTab('stats')" id="tab-btn-stats" class="tab-btn flex-1 min-w-[105px] py-2 px-2.5 rounded-lg text-xs font-rpg font-bold transition-all text-slate-400 hover:text-slate-200 flex items-center justify-center gap-1.5">
+          <i class="fa-solid fa-sliders"></i> Stats & Mana
+        </button>
+        <button onclick="setTab('grimoire')" id="tab-btn-grimoire" class="tab-btn flex-1 min-w-[105px] py-2 px-2.5 rounded-lg text-xs font-rpg font-bold transition-all text-slate-400 hover:text-slate-200 flex items-center justify-center gap-1.5">
+          <i class="fa-solid fa-book-sparkles"></i> Grimoire
+        </button>
+      </nav>
+
+      <!-- PANNEAU 1 : APPARENCE DE L'AVATAR (MODULAR SVG CUSTOMIZER) -->
+      <section id="panel-avatar" class="tab-panel bg-[#0d121f]/90 p-4 sm:p-5 rounded-2xl border border-amber-600/30 space-y-5">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+          <div>
+            <h3 class="font-rpg text-amber-400 font-bold text-base flex items-center gap-2">
+              <i class="fa-solid fa-palette text-amber-500"></i> Atelier de Morphologie & Cosmétique
+            </h3>
+            <p class="text-[11px] text-slate-400">Modifie chaque calque de ton aventurier en direct.</p>
+          </div>
+          <button onclick="randomizeAppearance()" class="rpg-btn px-2.5 py-1 rounded text-xs text-amber-300 font-rpg">
+            <i class="fa-solid fa-shuffle mr-1"></i> Look Aléatoire
+          </button>
+        </div>
+
+        <!-- 1. Teinte de Peau -->
+        <div>
+          <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
+            Teinte de Peau / Race Fantasy
+          </label>
+          <div class="grid grid-cols-6 gap-2" id="skin-picker">
+            <!-- Rendu en JS -->
+          </div>
+        </div>
+
+        <!-- 2. Coiffure & Coupe -->
+        <div>
+          <div class="flex items-center justify-between mb-1.5">
+            <label class="text-xs font-bold text-slate-300 uppercase tracking-wider">Coupe de Cheveux</label>
+            <span id="label-hair-style" class="text-[11px] text-amber-400 font-medium">Court Guerrier</span>
+          </div>
+          <div class="grid grid-cols-4 sm:grid-cols-7 gap-1.5" id="hairstyle-picker">
+            <!-- Rendu en JS -->
+          </div>
+        </div>
+
+        <!-- 3. Couleur de Cheveux -->
+        <div>
+          <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">Teinte Capillaire</label>
+          <div class="grid grid-cols-7 gap-2" id="haircolor-picker">
+            <!-- Rendu en JS -->
+          </div>
+        </div>
+
+        <!-- 4. Regard & Expression -->
+        <div>
+          <div class="flex items-center justify-between mb-1.5">
+            <label class="text-xs font-bold text-slate-300 uppercase tracking-wider">Regard & Tempérament</label>
+            <span id="label-expression" class="text-[11px] text-amber-400 font-medium">Déterminé</span>
+          </div>
+          <div class="grid grid-cols-2 sm:grid-cols-5 gap-2" id="expression-picker">
+            <!-- Rendu en JS -->
+          </div>
+        </div>
+
+        <!-- 5. Pilosité & Marques Faciales -->
+        <div>
+          <div class="flex items-center justify-between mb-1.5">
+            <label class="text-xs font-bold text-slate-300 uppercase tracking-wider">Marques & Pilosité</label>
+            <span id="label-facial-mark" class="text-[11px] text-amber-400 font-medium">Aucun</span>
+          </div>
+          <div class="grid grid-cols-3 sm:grid-cols-6 gap-2" id="mark-picker">
+            <!-- Rendu en JS -->
+          </div>
+        </div>
+
+        <!-- 6. Accessoire en main -->
+        <div>
+          <div class="flex items-center justify-between mb-1.5">
+            <label class="text-xs font-bold text-slate-300 uppercase tracking-wider">Objet / Artefact en main</label>
+            <span id="label-accessory" class="text-[11px] text-amber-400 font-medium">Parchemin</span>
+          </div>
+          <div class="grid grid-cols-2 sm:grid-cols-5 gap-2" id="accessory-picker">
+            <!-- Rendu en JS -->
+          </div>
+        </div>
+
+        <!-- 7. Décor d'Arrière-Plan -->
+        <div>
+          <div class="flex items-center justify-between mb-1.5">
+            <label class="text-xs font-bold text-slate-300 uppercase tracking-wider">Lieu de Prédilection (Arrière-Plan)</label>
+            <span id="label-backdrop" class="text-[11px] text-amber-400 font-medium">Forteresse</span>
+          </div>
+          <div class="grid grid-cols-2 sm:grid-cols-5 gap-2" id="backdrop-picker">
+            <!-- Rendu en JS -->
+          </div>
+        </div>
+
+      </section>
+
+      <!-- PANNEAU 2 : ARCHÉTYPE & IDENTITÉ -->
+      <section id="panel-archetype" class="tab-panel hidden bg-[#0d121f]/90 p-4 sm:p-5 rounded-2xl border border-amber-600/30 space-y-4">
+        <div>
+          <h3 class="font-rpg text-amber-400 font-bold text-base flex items-center gap-2">
+            <i class="fa-solid fa-crown text-amber-500"></i> Identité & Archétype de Travail
+          </h3>
+          <p class="text-[11px] text-slate-400">Ton style de jeu au sein du groupe pendant le projet.</p>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Nom / Pseudo de Héros</label>
+            <input type="text" id="input-hero-name" maxlength="24" value="Sire Valérian" 
+              class="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-700 text-sm font-semibold text-amber-300 focus:border-amber-500 outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-300 uppercase mb-1">N° d'Équipe ou Guilde</label>
+            <input type="text" id="input-guild-name" maxlength="28" value="Projet Fil Rouge #03" 
+              class="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-700 text-sm font-semibold text-slate-200 focus:border-amber-500 outline-none">
+          </div>
+        </div>
+
+        <!-- Choix des 4 Classes -->
+        <div>
+          <label class="block text-xs font-bold text-slate-300 uppercase mb-2">Classe d'Équipe</label>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            
+            <!-- Paladin -->
+            <div onclick="setClass('paladin')" id="class-select-paladin" class="class-card cursor-pointer p-3 rounded-xl border-2 border-amber-500 bg-amber-500/10 transition-all flex gap-3 items-center">
+              <div class="w-10 h-10 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center text-lg shrink-0">
+                <i class="fa-solid fa-shield-halved"></i>
+              </div>
+              <div>
+                <div class="font-rpg font-bold text-sm text-amber-300">Le Paladin</div>
+                <div class="text-[11px] text-slate-300">Le Bâtisseur : Organisation, cadre, rétroplanning clair.</div>
+              </div>
+            </div>
+
+            <!-- Rôdeur -->
+            <div onclick="setClass('ranger')" id="class-select-ranger" class="class-card cursor-pointer p-3 rounded-xl border border-slate-800 bg-slate-950/40 hover:border-emerald-500/60 transition-all flex gap-3 items-center">
+              <div class="w-10 h-10 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-lg shrink-0">
+                <i class="fa-solid fa-feather"></i>
+              </div>
+              <div>
+                <div class="font-rpg font-bold text-sm text-emerald-300">Le Rôdeur</div>
+                <div class="text-[11px] text-slate-300">L'Éclaireur : Recherche solo, défrichage de doc & code agile.</div>
+              </div>
+            </div>
+
+            <!-- Barde -->
+            <div onclick="setClass('bard')" id="class-select-bard" class="class-card cursor-pointer p-3 rounded-xl border border-slate-800 bg-slate-950/40 hover:border-purple-500/60 transition-all flex gap-3 items-center">
+              <div class="w-10 h-10 rounded-lg bg-purple-500/20 text-purple-400 flex items-center justify-center text-lg shrink-0">
+                <i class="fa-solid fa-masks-theater"></i>
+              </div>
+              <div>
+                <div class="font-rpg font-bold text-sm text-purple-300">Le Barde</div>
+                <div class="text-[11px] text-slate-300">L'Idéateur : Pitch, foisonnement d'idées, boost de moral.</div>
+              </div>
+            </div>
+
+            <!-- Alchimiste -->
+            <div onclick="setClass('alchemist')" id="class-select-alchemist" class="class-card cursor-pointer p-3 rounded-xl border border-slate-800 bg-slate-950/40 hover:border-cyan-500/60 transition-all flex gap-3 items-center">
+              <div class="w-10 h-10 rounded-lg bg-cyan-500/20 text-cyan-400 flex items-center justify-center text-lg shrink-0">
+                <i class="fa-solid fa-flask-vial"></i>
+              </div>
+              <div>
+                <div class="font-rpg font-bold text-sm text-cyan-300">L'Alchimiste</div>
+                <div class="text-[11px] text-slate-300">Le Finisseur : Qualité UI/UX, traque des bugs, cohérence.</div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Titre Honorifique / Devise</label>
+          <input type="text" id="input-hero-title" maxlength="45" value="Le Bâtisseur Méthodique" 
+            class="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-700 text-xs text-slate-200 focus:border-amber-500 outline-none">
+        </div>
+      </section>
+
+      <!-- PANNEAU 3 : STATS & MANA DE TRAVAIL -->
+      <section id="panel-stats" class="tab-panel hidden bg-[#0d121f]/90 p-4 sm:p-5 rounded-2xl border border-amber-600/30 space-y-5">
+        <div>
+          <h3 class="font-rpg text-amber-400 font-bold text-base flex items-center gap-2">
+            <i class="fa-solid fa-chart-line text-amber-500"></i> Répartition des Attributs de Bootcamp
+          </h3>
+          <p class="text-[11px] text-slate-400">Règle tes 4 jauges de 1 à 5. C'est ce qui permettra à tes équipiers de s'adapter à toi.</p>
+        </div>
+
+        <div class="space-y-4">
+          <!-- Stat 1 : Mana Social -->
+          <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 space-y-1.5">
+            <div class="flex justify-between items-center text-xs">
+              <span class="font-bold text-slate-200 flex items-center gap-1.5">
+                <i class="fa-solid fa-comments text-blue-400"></i> Mana Social (Besoin de Présence / Vocal)
+              </span>
+              <span id="val-social" class="font-mono text-amber-400 font-bold px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/30">3 / 5</span>
+            </div>
+            <input type="range" id="input-stat-social" min="1" max="5" value="3" oninput="updateStats()" class="w-full">
+            <p id="desc-social" class="text-[11px] text-amber-300/90 italic">
+              « Équilibré : Travail silencieux le matin, synchronisation d'équipe l'après-midi. »
+            </p>
+          </div>
+
+          <!-- Stat 2 : Initiative -->
+          <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 space-y-1.5">
+            <div class="flex justify-between items-center text-xs">
+              <span class="font-bold text-slate-200 flex items-center gap-1.5">
+                <i class="fa-solid fa-bolt text-amber-400"></i> Vitesse d'Initiative (Démarrage d'Action)
+              </span>
+              <span id="val-speed" class="font-mono text-amber-400 font-bold px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/30">4 / 5</span>
+            </div>
+            <input type="range" id="input-stat-speed" min="1" max="5" value="4" oninput="updateStats()" class="w-full">
+            <p id="desc-speed" class="text-[11px] text-amber-300/90 italic">
+              « Démarrage rapide : Après un court cadrage de 10 min, commence à produire. »
+            </p>
+          </div>
+
+          <!-- Stat 3 : Canal -->
+          <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 space-y-1.5">
+            <div class="flex justify-between items-center text-xs">
+              <span class="font-bold text-slate-200 flex items-center gap-1.5">
+                <i class="fa-solid fa-scroll text-emerald-400"></i> Canal Préféré (1 = Écrit Slack / 5 = Vocal Direct)
+              </span>
+              <span id="val-channel" class="font-mono text-amber-400 font-bold px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/30">2 / 5</span>
+            </div>
+            <input type="range" id="input-stat-channel" min="1" max="5" value="2" oninput="updateStats()" class="w-full">
+            <p id="desc-channel" class="text-[11px] text-amber-300/90 italic">
+              « Écrit prioritaire : Tout par messages clairs sur Slack/Discord, un vocal uniquement si blocage critique. »
+            </p>
+          </div>
+
+          <!-- Stat 4 : Tolérance Chaos -->
+          <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 space-y-1.5">
+            <div class="flex justify-between items-center text-xs">
+              <span class="font-bold text-slate-200 flex items-center gap-1.5">
+                <i class="fa-solid fa-wind text-purple-400"></i> Tolérance aux Pivots & Imprévus
+              </span>
+              <span id="val-chaos" class="font-mono text-amber-400 font-bold px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/30">2 / 5</span>
+            </div>
+            <input type="range" id="input-stat-chaos" min="1" max="5" value="2" oninput="updateStats()" class="w-full">
+            <p id="desc-chaos" class="text-[11px] text-amber-300/90 italic">
+              « Besoin de stabilité : Les décisions doivent rester fermes sur la journée. »
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- PANNEAU 4 : LE GRIMOIRE (DON, MALUS & POTION) -->
+      <section id="panel-grimoire" class="tab-panel hidden bg-[#0d121f]/90 p-4 sm:p-5 rounded-2xl border border-amber-600/30 space-y-4">
+        <div>
+          <h3 class="font-rpg text-amber-400 font-bold text-base flex items-center gap-2">
+            <i class="fa-solid fa-hat-wizard text-amber-500"></i> Sortilèges & Protocole d'Apaisement
+          </h3>
+          <p class="text-[11px] text-slate-400">Ce qui t'anime, ce qui te bloque net, et comment te parler en cas de désaccord.</p>
+        </div>
+
+        <!-- 1. Don Ultime -->
+        <div class="space-y-1.5">
+          <label class="text-xs font-bold text-amber-300 flex items-center gap-1.5 uppercase">
+            <i class="fa-solid fa-sun text-amber-400"></i> Don Ultime (Ce qui me met dans ma zone de génie)
+          </label>
+          <textarea id="input-ultimate" rows="2" class="w-full p-2.5 rounded-lg bg-slate-950 border border-slate-700 text-xs text-slate-200 focus:border-amber-500 outline-none"></textarea>
+          <div class="flex flex-wrap gap-1.5">
+            <button onclick="applySnippet('ultimate', 'Structuration agile & Notion au carré')" class="text-[10px] px-2 py-0.5 rounded bg-slate-800 hover:bg-amber-500/20 text-slate-300 border border-slate-700">+ Cadrage Notion</button>
+            <button onclick="applySnippet('ultimate', 'Débuggage calme & persévérance sous pression')" class="text-[10px] px-2 py-0.5 rounded bg-slate-800 hover:bg-amber-500/20 text-slate-300 border border-slate-700">+ Débug zen</button>
+            <button onclick="applySnippet('ultimate', 'Synthèse rapide des débats confus en 3 actions nettes')" class="text-[10px] px-2 py-0.5 rounded bg-slate-800 hover:bg-amber-500/20 text-slate-300 border border-slate-700">+ Synthèse éclair</button>
+            <button onclick="applySnippet('ultimate', 'Veille technologique & vulgarisation d\'outils obscurs')" class="text-[10px] px-2 py-0.5 rounded bg-slate-800 hover:bg-amber-500/20 text-slate-300 border border-slate-700">+ Veille technique</button>
+          </div>
+        </div>
+
+        <!-- 2. Malus Critique -->
+        <div class="space-y-1.5">
+          <label class="text-xs font-bold text-red-400 flex items-center gap-1.5 uppercase">
+            <i class="fa-solid fa-skull-crossbones text-red-400"></i> Malus Critique / Kryptonite (Ce qui draine mon énergie)
+          </label>
+          <textarea id="input-weakness" rows="2" class="w-full p-2.5 rounded-lg bg-slate-950 border border-slate-700 text-xs text-slate-200 focus:border-red-500 outline-none"></textarea>
+          <div class="flex flex-wrap gap-1.5">
+            <button onclick="applySnippet('weakness', 'Le silence radio de plus de 12h sans donner de nouvelles')" class="text-[10px] px-2 py-0.5 rounded bg-slate-800 hover:bg-red-500/20 text-slate-300 border border-slate-700">+ Silence radio</button>
+            <button onclick="applySnippet('weakness', 'Les débats de 2 heures sans ordre du jour ni décisions')" class="text-[10px] px-2 py-0.5 rounded bg-slate-800 hover:bg-red-500/20 text-slate-300 border border-slate-700">+ Réunions fleuves</button>
+            <button onclick="applySnippet('weakness', 'Les changements d\'objectifs improvisés la veille d\'un jalon')" class="text-[10px] px-2 py-0.5 rounded bg-slate-800 hover:bg-red-500/20 text-slate-300 border border-slate-700">+ Pivots de nuit</button>
+            <button onclick="applySnippet('weakness', 'Être interrompu toutes les 15 minutes en plein focus')" class="text-[10px] px-2 py-0.5 rounded bg-slate-800 hover:bg-red-500/20 text-slate-300 border border-slate-700">+ Ping incessant</button>
+          </div>
+        </div>
+
+        <!-- 3. Potion de Rappel -->
+        <div class="space-y-1.5">
+          <label class="text-xs font-bold text-emerald-400 flex items-center gap-1.5 uppercase">
+            <i class="fa-solid fa-flask text-emerald-400"></i> Potion d'Apaisement (Comment me désamorcer sans me braquer)
+          </label>
+          <textarea id="input-potion" rows="2" class="w-full p-2.5 rounded-lg bg-slate-950 border border-slate-700 text-xs text-slate-200 focus:border-emerald-500 outline-none"></textarea>
+          <div class="flex flex-wrap gap-1.5">
+            <button onclick="applySnippet('potion', 'Dis-le-moi directement en tête-à-tête autour d\'un café calme')" class="text-[10px] px-2 py-0.5 rounded bg-slate-800 hover:bg-emerald-500/20 text-slate-300 border border-slate-700">+ Point café calme</button>
+            <button onclick="applySnippet('potion', 'Par écrit avec les 2 actions concrètes prioritaires attendues')" class="text-[10px] px-2 py-0.5 rounded bg-slate-800 hover:bg-emerald-500/20 text-slate-300 border border-slate-700">+ Écrit structuré (2 points)</button>
+            <button onclick="applySnippet('potion', 'Laisse-moi 30 minutes pour digérer avant d\'en rediscuter à froid')" class="text-[10px] px-2 py-0.5 rounded bg-slate-800 hover:bg-emerald-500/20 text-slate-300 border border-slate-700">+ 30 min pour digérer</button>
+            <button onclick="applySnippet('potion', 'Aide-moi à redécouper ma tâche en sous-objectifs simples')" class="text-[10px] px-2 py-0.5 rounded bg-slate-800 hover:bg-emerald-500/20 text-slate-300 border border-slate-700">+ Redécouper l'effort</button>
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+  </main>
+
+  <!-- ==================== ÉCRAN 2 : LE HALL DE GUILDE (REGROUPEMENT PROMO) ==================== -->
+  <main id="view-hall" class="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 flex-1 w-full hidden space-y-6">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-[#0d121f] p-4 rounded-2xl border border-amber-600/30">
+      <div>
+        <h2 class="font-fantasy text-xl sm:text-2xl text-amber-400 font-bold flex items-center gap-2">
+          <i class="fa-solid fa-users text-amber-500"></i> Le Hall des Aventuriers de la Promo
+        </h2>
+        <p class="text-xs text-slate-400 mt-1">Consulte les fiches des coéquipiers pour adapter vos méthodes de travail.</p>
+      </div>
+      <div class="flex items-center gap-2">
+        <button onclick="setView('forge')" class="rpg-btn-gold px-3.5 py-2 rounded-xl text-xs font-rpg flex items-center gap-2">
+          <i class="fa-solid fa-user-plus"></i> Forger mon Héros
+        </button>
+      </div>
+    </div>
+
+    <!-- Grille des Aventuriers Sauvegardés -->
+    <div id="guild-roster-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+      <!-- Rendu dynamique en JS -->
+    </div>
+  </main>
+
+  <!-- ==================== MODAL : PROTOCOLE D'ATELIER (TEAM-BUILDING 45 MIN) ==================== -->
+  <div id="modal-protocol" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="rpg-frame bg-[#0d121f] rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 text-slate-200">
+      <div class="flex items-center justify-between border-b border-amber-600/30 pb-3 mb-4">
+        <div class="flex items-center gap-2.5">
+          <i class="fa-solid fa-scroll text-amber-400 text-xl"></i>
+          <h3 class="font-fantasy text-lg text-amber-400 font-bold">Protocole de Quête : L'Atelier Promo (45 min)</h3>
+        </div>
+        <button onclick="toggleModal('modal-protocol')" class="text-slate-400 hover:text-amber-400 text-lg w-8 h-8 rounded bg-slate-800 flex items-center justify-center">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="space-y-4 text-xs leading-relaxed text-slate-300">
+        <div class="p-3 bg-amber-500/10 border border-amber-500/30 rounded-xl">
+          <span class="font-bold text-amber-300 block mb-1">🎯 Objectif : Débloquer la parole sans viser personne</span>
+          En remplaçant les reproches personnels par des statistiques de jeu (Mana Social, Kryptonite, Potion), chacun avoue ses limites sans honte et comprend le rythme des autres.
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div class="p-3 bg-slate-950 rounded-xl border border-slate-800">
+            <span class="font-mono text-amber-400 font-bold block">1. La Forge (10 min)</span>
+            Chacun forge son personnage sur son téléphone ou ordi et génère son Grimoire.
+          </div>
+          <div class="p-3 bg-slate-950 rounded-xl border border-slate-800">
+            <span class="font-mono text-amber-400 font-bold block">2. Le Speed-Dating (20 min)</span>
+            En binômes <em>mélangés hors de leur groupe de projet</em>, chacun lit sa Kryptonite et sa Potion en 2 min chrono.
+          </div>
+          <div class="p-3 bg-slate-950 rounded-xl border border-slate-800">
+            <span class="font-mono text-amber-400 font-bold block">3. Le Pacte d'Équipe (15 min)</span>
+            Retour en groupe de projet : partage des fiches sur Slack et écriture des 3 règles d'or de travail.
+          </div>
+        </div>
+
+        <div class="p-3 bg-slate-950 rounded-xl border border-slate-800">
+          <span class="font-bold text-amber-400 block mb-1">⚔️ Les 3 Monstres de Bootcamp à aborder ensemble :</span>
+          <p class="mb-1"><strong>• Le Golem Solitaire :</strong> Celui qui prend tout sur son dos la nuit sans déléguer et finit aigri.</p>
+          <p class="mb-1"><strong>• Le Spectre du Brouillard :</strong> Celui qui n'ose pas dire qu'il est paumé et disparaît plusieurs jours.</p>
+          <p><strong>• L'Hydre du Débat Infini :</strong> Le groupe qui discute 3 heures sur une couleur sans coder.</p>
+        </div>
+      </div>
+
+      <div class="mt-5 flex justify-end">
+        <button onclick="toggleModal('modal-protocol')" class="rpg-btn-gold px-4 py-2 rounded-xl text-xs font-rpg">
+          C'est Compris !
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION HUD -->
+  <div id="rpg-toast" class="fixed bottom-6 right-6 z-50 bg-[#0e1422] border-2 border-amber-500 text-amber-300 text-xs px-4 py-3 rounded-xl shadow-2xl flex items-center gap-2 transform translate-y-24 opacity-0 transition-all duration-300 pointer-events-none">
+    <i id="toast-icon" class="fa-solid fa-sparkles text-amber-400"></i>
+    <span id="toast-msg">Notification de Guilde</span>
+  </div>
+
+  <!-- ==================== LOGIQUE JAVASCRIPT & AUDIO ==================== -->
+  <script>
+    /* ==========================================================================
+       1. SYNTHÉTISEUR AUDIO WEB AUDIO API (Effets de jeu rétro & immersifs)
+       ========================================================================== */
+    class RetroSoundEngine {
+      constructor() {
+        this.ctx = null;
+        this.muted = false;
+      }
+      init() {
+        if (!this.ctx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          this.ctx = new AudioContext();
+        }
+        if (this.ctx && this.ctx.state === 'suspended') {
+          this.ctx.resume();
+        }
+      }
+      playClick() {
+        if (this.muted) return;
+        this.init();
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(360, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(120, this.ctx.currentTime + 0.05);
+        gain.gain.setValueAtTime(0.12, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.05);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.05);
+      }
+      playEquip() {
+        if (this.muted) return;
+        this.init();
+        const now = this.ctx.currentTime;
+        const freqs = [440, 587.33, 880];
+        freqs.forEach((f, i) => {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(f, now + i * 0.03);
+          gain.gain.setValueAtTime(0.08, now + i * 0.03);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.03 + 0.15);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(now + i * 0.03);
+          osc.stop(now + i * 0.03 + 0.15);
+        });
+      }
+      playDiceRoll() {
+        if (this.muted) return;
+        this.init();
+        const now = this.ctx.currentTime;
+        for (let i = 0; i < 7; i++) {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'square';
+          osc.frequency.setValueAtTime(150 + Math.random() * 300, now + i * 0.04);
+          gain.gain.setValueAtTime(0.07, now + i * 0.04);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.04 + 0.03);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(now + i * 0.04);
+          osc.stop(now + i * 0.04 + 0.03);
+        }
+      }
+      playFanfare() {
+        if (this.muted) return;
+        this.init();
+        const now = this.ctx.currentTime;
+        const notes = [261.63, 329.63, 392.00, 523.25, 659.25];
+        notes.forEach((f, i) => {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(f, now + i * 0.07);
+          gain.gain.setValueAtTime(0.12, now + i * 0.07);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.07 + 0.35);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(now + i * 0.07);
+          osc.stop(now + i * 0.07 + 0.35);
+        });
+      }
+    }
+    const audio = new RetroSoundEngine();
+
+    // Toggle Son
+    document.getElementById('btn-sound-toggle').addEventListener('click', () => {
+      audio.muted = !audio.muted;
+      const icon = document.getElementById('sound-icon');
+      if (audio.muted) {
+        icon.className = 'fa-solid fa-volume-xmark text-slate-500';
+        triggerToast("Sons de l'interface coupés", "fa-volume-xmark");
+      } else {
+        icon.className = 'fa-solid fa-volume-high text-amber-400';
+        audio.playClick();
+        triggerToast("Sons de l'interface activés", "fa-volume-high");
+      }
+    });
+
+    /* ==========================================================================
+       2. DONNÉES DU CRÉATEUR DE PERSONNAGE (CONFIGURATIONS & OPTIONS)
+       ========================================================================== */
+    const HERO_DATA = {
+      name: "Sire Valérian",
+      guild: "Projet Fil Rouge #03",
+      classKey: "paladin",
+      title: "Le Bâtisseur Méthodique",
+      stats: { social: 3, speed: 4, channel: 2, chaos: 2 },
+      ultimate: "Structure les sprints et découpe les tâches en jalons limpides.",
+      weakness: "Le silence de plus de 12h & les changements d'objectifs la veille du jalon.",
+      potion: "Par message direct avec les 2 actions concrètes attendues.",
+      // Cosmétiques Avatar
+      skin: "peche",
+      hairStyle: "warrior",
+      hairColor: "brun",
+      expression: "determined",
+      mark: "scar",
+      accessory: "scroll",
+      backdrop: "fortress"
+    };
+
+    // Palettes de couleurs
+    const SKIN_PALETTES = {
+      pale: { base: "#fae1d6", shadow: "#ddb4a0", name: "Pâle" },
+      peche: { base: "#f4caa8", shadow: "#d99f78", name: "Pêche" },
+      mate: { base: "#c88846", shadow: "#995b23", name: "Mate" },
+      sombre: { base: "#6d4428", shadow: "#472814", name: "Ébène" },
+      elfique: { base: "#a6cbdf", shadow: "#6f9bb4", name: "Elfique" },
+      doree: { base: "#d8a473", shadow: "#aa7444", name: "Céleste" }
+    };
+
+    const HAIR_COLORS = {
+      noir: { base: "#1e2229", light: "#3b4352", name: "Noir Corbeau" },
+      brun: { base: "#3e2723", light: "#633f38", name: "Brun Sombre" },
+      chatain: { base: "#6d4c41", light: "#946a5d", name: "Châtain" },
+      roux: { base: "#c0392b", light: "#e67e22", name: "Roux Flamme" },
+      blond: { base: "#e5b73e", light: "#fef08a", name: "Blond Platine" },
+      prune: { base: "#6a1b9a", light: "#ba68c8", name: "Améthyste" },
+      argente: { base: "#94a3b8", light: "#f1f5f9", name: "Argenté" }
+    };
+
+    const HAIR_STYLES = [
+      { id: "warrior", name: "Court Guerrier" },
+      { id: "long", name: "Long Ondulé" },
+      { id: "topknot", name: "Chignon Samouraï" },
+      { id: "braids", name: "Tresses Rôdeur" },
+      { id: "pixie", name: "Pixie Rebelle" },
+      { id: "curly", name: "Bouclé Volumineux" },
+      { id: "bald", name: "Chauve / Épuré" }
+    ];
+
+    const EXPRESSIONS = [
+      { id: "determined", name: "Déterminé" },
+      { id: "smirk", name: "Complice" },
+      { id: "glasses", name: "Lunettes / Analyste" },
+      { id: "stern", name: "Sévère / Focus" },
+      { id: "mystic", name: "Yeux Runiques" }
+    ];
+
+    const MARKS = [
+      { id: "none", name: "Aucun" },
+      { id: "scar", name: "Cicatrice" },
+      { id: "rune", name: "Tatouage Rune" },
+      { id: "freckles", name: "Rousseurs" },
+      { id: "beard", name: "Barbe Taillée" },
+      { id: "goatee", name: "Bouc Élégant" }
+    ];
+
+    const ACCESSORIES = [
+      { id: "scroll", name: "Parchemin de Sprint", icon: "fa-scroll" },
+      { id: "dagger", name: "Dague Runique", icon: "fa-wand-magic" },
+      { id: "wrench", name: "Clé Mécanique", icon: "fa-wrench" },
+      { id: "potion", name: "Fiole Alchimique", icon: "fa-flask" },
+      { id: "quill", name: "Calame Doré", icon: "fa-feather-pointed" }
+    ];
+
+    const BACKDROPS = [
+      { id: "fortress", name: "Forteresse de Pierre", color: "#f59e0b" },
+      { id: "crypt", name: "Crypte Runique", color: "#8b5cf6" },
+      { id: "forest", name: "Forêt Brumeuse", color: "#10b981" },
+      { id: "tavern", name: "Taverne Chaleureuse", color: "#ea580c" },
+      { id: "lab", name: "Laboratoire Mystique", color: "#06b6d4" }
+    ];
+
+    const CLASSES = {
+      paladin: {
+        id: "paladin",
+        name: "Paladin",
+        role: "Le Bâtisseur",
+        spec: "Cadrage & Livrables",
+        icon: "fa-solid fa-shield-halved",
+        color: "#f59e0b",
+        glow: "rgba(245, 158, 11, 0.4)",
+        defaultStats: { social: 3, speed: 4, channel: 2, chaos: 2 },
+        armorName: "Armure de Plaques Dorée"
+      },
+      ranger: {
+        id: "ranger",
+        name: "Rôdeur",
+        role: "L'Éclaireur",
+        spec: "Défrichage Solo & Tech",
+        icon: "fa-solid fa-feather",
+        color: "#10b981",
+        glow: "rgba(16, 185, 129, 0.4)",
+        defaultStats: { social: 2, speed: 3, channel: 1, chaos: 4 },
+        armorName: "Cape & Harnais de Cuir"
+      },
+      bard: {
+        id: "bard",
+        name: "Barde",
+        role: "L'Idéateur",
+        spec: "Pitch & Créativité",
+        icon: "fa-solid fa-masks-theater",
+        color: "#a855f7",
+        glow: "rgba(168, 85, 247, 0.4)",
+        defaultStats: { social: 5, speed: 5, channel: 4, chaos: 5 },
+        armorName: "Doublet de Velours Brodé"
+      },
+      alchemist: {
+        id: "alchemist",
+        name: "Alchimiste",
+        role: "Le Finisseur",
+        spec: "Rigueur UX & Débug",
+        icon: "fa-solid fa-flask-vial",
+        color: "#06b6d4",
+        glow: "rgba(6, 182, 212, 0.4)",
+        defaultStats: { social: 2, speed: 2, channel: 3, chaos: 1 },
+        armorName: "Tablier Cuir & Fioles"
+      }
+    };
+
+    const STAT_TEXTS = {
+      social: [
+        "",
+        "Ermite en crypte : Focus solo complet, n'aime pas être dérangé à l'improviste.",
+        "Focus calme : Préfère des points de synchro ponctuels et espacés.",
+        "Équilibré : Travail silencieux le matin, synchronisation d'équipe l'après-midi.",
+        "Coopératif actif : Aime penser à voix haute et travailler en binôme régulier.",
+        "Énergie de taverne : Besoin vital de brainstorm oral et de calls huddle ouverts."
+      ],
+      speed: [
+        "",
+        "Réflexion profonde : A besoin de 24h d'assimilation avant d'écrire une ligne.",
+        "Analyse posée : Pose la structure et le plan avant d'attaquer.",
+        "Rythme modéré : Prépare les bases puis exécute méthodiquement.",
+        "Démarrage rapide : Après un court cadrage de 10 min, commence à produire.",
+        "Ruée héroïque : Prêt à foncer et tester dans la minute, apprend en marchant."
+      ],
+      channel: [
+        "",
+        "100% Écrit : Tout par tickets Notion/Slack, aucun call surprise.",
+        "Écrit prioritaire : Écrit pour le quotidien, vocal uniquement si blocage critique.",
+        "Mixte équilibré : Écrit pour les tâches, vocal rapide de 3 min pour débloquer.",
+        "Oral direct : Préfère s'appeler 2 minutes plutôt qu'écrire un roman de messages.",
+        "Vocal continu : Toujours dans la salle vocale pour échanger en live."
+      ],
+      chaos: [
+        "",
+        "Mur de pierre : Le plan fixé doit rester figé, tout changement soudain est anxiogène.",
+        "Besoin de stabilité : Les décisions doivent rester fermes au moins sur la journée.",
+        "Pragmatique : Sait s'adapter si la charge reste réaliste.",
+        "Agile aventureux : Aime réajuster si une meilleure idée émerge en cours de route.",
+        "Maître des tempêtes : S'épanouit dans l'improvisation et la pression de dernière minute."
+      ]
+    };
+
+    // Banque d'Aventuriers Préenregistrés pour le Hall de Guilde
+    const DEFAULT_GUILD_ROSTER = [
+      {
+        id: "hero-101",
+        name: "Damoiselle Camille",
+        guild: "Équipe 1 • Datacrons",
+        classKey: "ranger",
+        title: "L'Éclaireuse des API",
+        stats: { social: 2, speed: 3, channel: 1, chaos: 4 },
+        ultimate: "Épluche la documentation technique et trouve la solution en solo.",
+        weakness: "Les réunions de 2 heures sans ordre du jour précis.",
+        potion: "Écris-moi sur Slack avec le lien du bug et laisse-moi 30 min.",
+        skin: "pale", hairStyle: "braids", hairColor: "roux", expression: "determined", mark: "freckles", accessory: "dagger", backdrop: "forest"
+      },
+      {
+        id: "hero-102",
+        name: "Mage Sofiane",
+        guild: "Équipe 2 • WebSpells",
+        classKey: "bard",
+        title: "L'Orateur Inspiré",
+        stats: { social: 5, speed: 5, channel: 4, chaos: 5 },
+        ultimate: "Structure des slides percutantes et donne l'envie d'avancer.",
+        weakness: "Le manque d'enthousiasme et les silences gênants en réu.",
+        potion: "Prends un café avec moi pour rebondir sur une idée à la fois.",
+        skin: "mate", hairStyle: "curly", hairColor: "noir", expression: "smirk", mark: "goatee", accessory: "scroll", backdrop: "tavern"
+      },
+      {
+        id: "hero-103",
+        name: "Docteur Yuna",
+        guild: "Équipe 3 • Algomanciens",
+        classKey: "alchemist",
+        title: "L'Horlogère du Pixel",
+        stats: { social: 2, speed: 2, channel: 3, chaos: 1 },
+        ultimate: "Traque les alignements foireux et rend le produit ultra pro.",
+        weakness: "Pousser du code à minuit sans tester sur mobile.",
+        potion: "Rappelle-moi la contrainte de temps pour qu'on coupe dans les détails.",
+        skin: "doree", hairStyle: "topknot", hairColor: "argente", expression: "glasses", mark: "rune", accessory: "potion", backdrop: "lab"
+      }
+    ];
+
+    /* ==========================================================================
+       3. MOTEUR DE DESSIN SVG MODULAIRE TEMPS RÉEL (AVATAR SYSTEM)
+       ========================================================================== */
+    function renderModularAvatar() {
+      const skin = SKIN_PALETTES[HERO_DATA.skin] || SKIN_PALETTES.peche;
+      const hair = HAIR_COLORS[HERO_DATA.hairColor] || HAIR_COLORS.brun;
+      const cls = CLASSES[HERO_DATA.classKey] || CLASSES.paladin;
+
+      // 1. Couches de Vêtements selon la Classe
+      let bodySvg = '';
+      if (HERO_DATA.classKey === 'paladin') {
+        bodySvg = `
+          <!-- Armure de Plates Paladin -->
+          <path d="M50 145 L70 120 L130 120 L150 145 L165 200 L35 200 Z" fill="#334155" />
+          <path d="M60 122 L140 122 L130 170 L100 190 L70 170 Z" fill="#cbd5e1" stroke="#f59e0b" stroke-width="3" />
+          <path d="M100 122 L100 185" stroke="#f59e0b" stroke-width="2.5" />
+          <!-- Épaulettes -->
+          <circle cx="50" cy="135" r="22" fill="#ca8a04" stroke="#fef08a" stroke-width="2" />
+          <circle cx="150" cy="135" r="22" fill="#ca8a04" stroke="#fef08a" stroke-width="2" />
+        `;
+      } else if (HERO_DATA.classKey === 'ranger') {
+        bodySvg = `
+          <!-- Tunique & Cuir Rôdeur -->
+          <path d="M45 135 L70 120 L130 120 L155 135 L170 200 L30 200 Z" fill="#064e3b" />
+          <path d="M75 120 L125 120 L115 200 L85 200 Z" fill="#78350f" />
+          <!-- Bandoulière en cuir avec boucle dorée -->
+          <line x1="50" y1="130" x2="145" y2="190" stroke="#451a03" stroke-width="9" />
+          <rect x="92" y="152" width="12" height="12" fill="#f59e0b" rx="2" />
+          <!-- Cape forestière -->
+          <path d="M35 145 C25 170 30 200 35 200 L55 200 Z" fill="#022c22" />
+          <path d="M165 145 C175 170 170 200 165 200 L145 200 Z" fill="#022c22" />
+        `;
+      } else if (HERO_DATA.classKey === 'bard') {
+        bodySvg = `
+          <!-- Doublet de Velours Barde -->
+          <path d="M45 135 L70 120 L130 120 L155 135 L165 200 L35 200 Z" fill="#581c87" />
+          <path d="M80 120 L120 120 L110 200 L90 200 Z" fill="#e11d48" />
+          <line x1="100" y1="120" x2="100" y2="200" stroke="#f59e0b" stroke-width="2" stroke-dasharray="3 3" />
+          <!-- Col à jabot volant -->
+          <path d="M85 120 Q100 135 115 120 Q100 145 85 120 Z" fill="#fdf4ff" />
+          <!-- Épaulettes bouffantes -->
+          <ellipse cx="48" cy="140" rx="18" ry="14" fill="#9333ea" />
+          <ellipse cx="152" cy="140" rx="18" ry="14" fill="#9333ea" />
+        `;
+      } else {
+        bodySvg = `
+          <!-- Tablier d'Alchimiste -->
+          <path d="M45 135 L70 120 L130 120 L155 135 L165 200 L35 200 Z" fill="#155e75" />
+          <path d="M75 125 L125 125 L130 200 L70 200 Z" fill="#78350f" stroke="#083344" stroke-width="2" />
+          <!-- Ceinture porte-fioles avec potions lumineuses -->
+          <rect x="65" y="165" width="70" height="7" fill="#451a03" />
+          <rect x="75" y="158" width="6" height="15" rx="3" fill="#38bdf8" />
+          <rect x="88" y="158" width="6" height="15" rx="3" fill="#a855f7" />
+          <rect x="101" y="158" width="6" height="15" rx="3" fill="#4ade80" />
+        `;
+      }
+      document.getElementById('layer-body').innerHTML = bodySvg;
+
+      // 2. Cou & Base du Visage (Skin)
+      const headSvg = `
+        <!-- Cou -->
+        <rect x="85" y="100" width="30" height="25" fill="${skin.shadow}" rx="2" />
+        <!-- Tête -->
+        <path d="M65 65 C65 35 135 35 135 65 C135 98 120 115 100 115 C80 115 65 98 65 65 Z" fill="${skin.base}" />
+        <!-- Oreilles -->
+        <circle cx="64" cy="68" r="8" fill="${skin.shadow}" />
+        <circle cx="136" cy="68" r="8" fill="${skin.shadow}" />
+        <!-- Ombre sous menton -->
+        <path d="M85 110 Q100 117 115 110 Z" fill="${skin.shadow}" />
+      `;
+      document.getElementById('layer-head').innerHTML = headSvg;
+
+      // 3. Regard & Expression
+      let eyesSvg = '';
+      if (HERO_DATA.expression === 'determined') {
+        eyesSvg = `
+          <!-- Sourcils froncés déterminés -->
+          <path d="M76 56 L92 60" stroke="#1f2937" stroke-width="3" stroke-linecap="round" />
+          <path d="M124 56 L108 60" stroke="#1f2937" stroke-width="3" stroke-linecap="round" />
+          <!-- Yeux -->
+          <circle cx="84" cy="67" r="4.5" fill="#0f172a" />
+          <circle cx="85" cy="65.5" r="1.5" fill="#ffffff" />
+          <circle cx="116" cy="67" r="4.5" fill="#0f172a" />
+          <circle cx="117" cy="65.5" r="1.5" fill="#ffffff" />
+          <!-- Bouche assurée -->
+          <path d="M92 94 Q100 97 108 94" stroke="#78350f" stroke-width="2.5" fill="none" stroke-linecap="round" />
+        `;
+      } else if (HERO_DATA.expression === 'smirk') {
+        eyesSvg = `
+          <!-- Sourcil arqué complice -->
+          <path d="M76 58 L92 58" stroke="#1f2937" stroke-width="3" stroke-linecap="round" />
+          <path d="M108 57 Q118 52 124 57" stroke="#1f2937" stroke-width="3" fill="none" stroke-linecap="round" />
+          <!-- Yeux espiègles -->
+          <path d="M78 68 Q84 63 90 68" stroke="#0f172a" stroke-width="3.5" fill="none" />
+          <circle cx="116" cy="67" r="4.5" fill="#0f172a" />
+          <circle cx="117" cy="65.5" r="1.5" fill="#ffffff" />
+          <!-- Sourire en coin -->
+          <path d="M94 95 Q104 98 111 90" stroke="#78350f" stroke-width="2.5" fill="none" stroke-linecap="round" />
+        `;
+      } else if (HERO_DATA.expression === 'glasses') {
+        eyesSvg = `
+          <!-- Lunettes dorées rondes -->
+          <circle cx="83" cy="67" r="10" fill="rgba(255,255,255,0.25)" stroke="#f59e0b" stroke-width="2" />
+          <circle cx="117" cy="67" r="10" fill="rgba(255,255,255,0.25)" stroke="#f59e0b" stroke-width="2" />
+          <line x1="93" y1="67" x2="107" y2="67" stroke="#f59e0b" stroke-width="2" />
+          <circle cx="83" cy="67" r="3.5" fill="#0f172a" />
+          <circle cx="117" cy="67" r="3.5" fill="#0f172a" />
+          <circle cx="84" cy="65" r="1.2" fill="#fff" />
+          <circle cx="118" cy="65" r="1.2" fill="#fff" />
+          <!-- Bouche concentrée -->
+          <line x1="93" y1="94" x2="107" y2="94" stroke="#78350f" stroke-width="2" stroke-linecap="round" />
+        `;
+      } else if (HERO_DATA.expression === 'stern') {
+        eyesSvg = `
+          <!-- Regard sévère & intense -->
+          <path d="M75 58 L92 63" stroke="#111827" stroke-width="3.5" stroke-linecap="round" />
+          <path d="M125 58 L108 63" stroke="#111827" stroke-width="3.5" stroke-linecap="round" />
+          <rect x="80" y="66" width="8" height="4" fill="#0f172a" rx="1" />
+          <rect x="112" y="66" width="8" height="4" fill="#0f172a" rx="1" />
+          <!-- Bouche droite stricte -->
+          <line x1="92" y1="95" x2="108" y2="95" stroke="#451a03" stroke-width="2.5" />
+        `;
+      } else {
+        // Yeux Runiques / Mystiques
+        eyesSvg = `
+          <path d="M76 56 Q84 54 92 58" stroke="#1f2937" stroke-width="2.5" stroke-linecap="round" fill="none" />
+          <path d="M108 58 Q116 54 124 56" stroke="#1f2937" stroke-width="2.5" stroke-linecap="round" fill="none" />
+          <!-- Orbes luminescents cyan -->
+          <ellipse cx="84" cy="67" rx="5" ry="6" fill="#38bdf8" filter="drop-shadow(0 0 6px #38bdf8)" />
+          <ellipse cx="116" cy="67" rx="5" ry="6" fill="#38bdf8" filter="drop-shadow(0 0 6px #38bdf8)" />
+          <circle cx="84" cy="67" r="2" fill="#ffffff" />
+          <circle cx="116" cy="67" r="2" fill="#ffffff" />
+          <path d="M93 94 Q100 97 107 94" stroke="#78350f" stroke-width="2" fill="none" />
+        `;
+      }
+      document.getElementById('layer-eyes').innerHTML = eyesSvg;
+
+      // 4. Marques & Pilosité
+      let markSvg = '';
+      if (HERO_DATA.mark === 'scar') {
+        markSvg = `
+          <!-- Cicatrice sur l'œil gauche avec points de suture -->
+          <line x1="84" y1="52" x2="81" y2="78" stroke="#b91c1c" stroke-width="2.5" stroke-linecap="round" />
+          <line x1="80" y1="60" x2="86" y2="61" stroke="#7f1d1d" stroke-width="1.5" />
+          <line x1="79" y1="70" x2="85" y2="71" stroke="#7f1d1d" stroke-width="1.5" />
+        `;
+      } else if (HERO_DATA.mark === 'rune') {
+        markSvg = `
+          <!-- Tatouage Runique sur la tempe -->
+          <path d="M125 58 L130 63 L126 69 L132 75" stroke="#f59e0b" stroke-width="2" fill="none" stroke-linecap="round" filter="drop-shadow(0 0 3px #f59e0b)" />
+          <circle cx="128" cy="66" r="1.5" fill="#fef08a" />
+        `;
+      } else if (HERO_DATA.mark === 'freckles') {
+        markSvg = `
+          <!-- Taches de rousseur -->
+          <circle cx="78" cy="76" r="1" fill="#92400e" />
+          <circle cx="83" cy="78" r="1" fill="#92400e" />
+          <circle cx="87" cy="75" r="1" fill="#92400e" />
+          <circle cx="113" cy="75" r="1" fill="#92400e" />
+          <circle cx="117" cy="78" r="1" fill="#92400e" />
+          <circle cx="122" cy="76" r="1" fill="#92400e" />
+        `;
+      } else if (HERO_DATA.mark === 'beard') {
+        markSvg = `
+          <!-- Barbe taillée -->
+          <path d="M68 75 C68 115 78 123 100 123 C122 123 132 115 132 75 L124 75 C124 105 116 114 100 114 C84 114 76 105 76 75 Z" fill="${hair.base}" />
+          <!-- Moustache -->
+          <path d="M88 88 Q100 84 112 88 Q100 93 88 88 Z" fill="${hair.base}" />
+        `;
+      } else if (HERO_DATA.mark === 'goatee') {
+        markSvg = `
+          <!-- Bouc taillé -->
+          <path d="M93 98 L107 98 L103 118 L97 118 Z" fill="${hair.base}" />
+          <path d="M90 89 Q100 86 110 89 Q100 92 90 89 Z" fill="${hair.base}" />
+        `;
+      }
+      document.getElementById('layer-face-details').innerHTML = markSvg;
+
+      // 5. Coiffure & Cheveux
+      let hairSvg = '';
+      if (HERO_DATA.hairStyle === 'warrior') {
+        hairSvg = `
+          <!-- Court Guerrier Spiké -->
+          <path d="M60 60 C58 28 85 22 100 20 C115 22 142 28 140 60 C140 68 135 70 135 60 C130 35 115 32 100 32 C85 32 70 35 65 60 Z" fill="${hair.base}" />
+          <polygon points="100,16 92,30 108,30" fill="${hair.light}" />
+          <polygon points="82,22 75,34 90,32" fill="${hair.light}" />
+          <polygon points="118,22 110,32 125,34" fill="${hair.light}" />
+        `;
+      } else if (HERO_DATA.hairStyle === 'long') {
+        hairSvg = `
+          <!-- Cheveux Longs Ondulés -->
+          <path d="M62 62 C55 30 85 22 100 22 C115 22 145 30 138 62 C135 90 148 145 142 165 C135 140 134 100 134 70 C125 36 75 36 66 70 C66 100 65 140 58 165 C52 145 65 90 62 62 Z" fill="${hair.base}" />
+          <path d="M72 40 Q100 30 128 40" stroke="${hair.light}" stroke-width="3" fill="none" />
+        `;
+      } else if (HERO_DATA.hairStyle === 'topknot') {
+        hairSvg = `
+          <!-- Chignon Samouraï Haut -->
+          <path d="M62 60 C60 30 85 28 100 28 C115 28 140 30 138 60 C138 68 134 62 132 50 C125 36 75 36 68 50 C66 62 62 68 62 60 Z" fill="${hair.base}" />
+          <!-- Chignon au sommet -->
+          <circle cx="100" cy="18" r="14" fill="${hair.base}" />
+          <circle cx="100" cy="18" r="9" fill="${hair.light}" />
+          <line x1="84" y1="18" x2="116" y2="18" stroke="#f59e0b" stroke-width="3" stroke-linecap="round" />
+        `;
+      } else if (HERO_DATA.hairStyle === 'braids') {
+        hairSvg = `
+          <!-- Tresses Rôdeur -->
+          <path d="M64 55 C60 28 85 25 100 25 C115 25 140 28 136 55 C130 35 70 35 64 55 Z" fill="${hair.base}" />
+          <!-- Tresse gauche tombante -->
+          <path d="M65 65 C58 90 62 120 60 160 L54 160 C52 120 50 90 61 65 Z" fill="${hair.light}" />
+          <!-- Tresse droite tombante -->
+          <path d="M135 65 C142 90 138 120 140 160 L146 160 C148 120 150 90 139 65 Z" fill="${hair.light}" />
+        `;
+      } else if (HERO_DATA.hairStyle === 'pixie') {
+        hairSvg = `
+          <!-- Coupe Pixie Rebelle Asymétrique -->
+          <path d="M62 55 C60 25 90 20 105 22 C125 24 140 35 138 55 C132 40 120 32 100 32 C78 32 68 45 62 55 Z" fill="${hair.base}" />
+          <path d="M68 35 L105 52 L95 34 Z" fill="${hair.light}" />
+          <path d="M102 32 L132 48 L122 32 Z" fill="${hair.light}" />
+        `;
+      } else if (HERO_DATA.hairStyle === 'curly') {
+        hairSvg = `
+          <!-- Bouclé / Épais -->
+          <circle cx="75" cy="40" r="18" fill="${hair.base}" />
+          <circle cx="100" cy="32" r="20" fill="${hair.base}" />
+          <circle cx="125" cy="40" r="18" fill="${hair.base}" />
+          <circle cx="62" cy="58" r="14" fill="${hair.base}" />
+          <circle cx="138" cy="58" r="14" fill="${hair.base}" />
+          <circle cx="100" cy="32" r="13" fill="${hair.light}" opacity="0.6" />
+        `;
+      } else {
+        // Chauve / Épuré
+        hairSvg = `
+          <path d="M72 40 Q100 28 128 40" stroke="rgba(255,255,255,0.4)" stroke-width="2" fill="none" />
+        `;
+      }
+      document.getElementById('layer-hair').innerHTML = hairSvg;
+
+      // 6. Accessoire en main
+      let accSvg = '';
+      if (HERO_DATA.accessory === 'scroll') {
+        accSvg = `
+          <!-- Parchemin Runique Magique -->
+          <g transform="translate(142, 110)">
+            <rect x="0" y="0" width="38" height="48" rx="3" fill="#fef3c7" stroke="#b45309" stroke-width="2" transform="rotate(-12)" />
+            <line x1="5" y1="12" x2="28" y2="7" stroke="#b45309" stroke-width="2" stroke-linecap="round" />
+            <line x1="6" y1="20" x2="26" y2="15" stroke="#b45309" stroke-width="2" stroke-linecap="round" />
+            <line x1="7" y1="28" x2="24" y2="23" stroke="#b45309" stroke-width="2" stroke-linecap="round" />
+            <circle cx="15" cy="38" r="4" fill="#dc2626" />
+          </g>
+        `;
+      } else if (HERO_DATA.accessory === 'dagger') {
+        accSvg = `
+          <!-- Dague Runique Luminescente -->
+          <g transform="translate(150, 100) rotate(-20)">
+            <polygon points="12,0 18,35 6,35" fill="#38bdf8" filter="drop-shadow(0 0 5px #38bdf8)" />
+            <rect x="2" y="35" width="20" height="4" fill="#f59e0b" rx="1" />
+            <rect x="9" y="39" width="6" height="15" fill="#78350f" />
+            <circle cx="12" cy="56" r="3.5" fill="#f59e0b" />
+          </g>
+        `;
+      } else if (HERO_DATA.accessory === 'wrench') {
+        accSvg = `
+          <!-- Clé Dorée d'Artisan -->
+          <g transform="translate(144, 105) rotate(15)">
+            <rect x="8" y="15" width="8" height="42" fill="#ca8a04" rx="2" />
+            <circle cx="12" cy="14" r="12" fill="#eab308" stroke="#ca8a04" stroke-width="2" />
+            <rect x="8" y="4" width="8" height="12" fill="#0f172a" />
+            <circle cx="12" cy="52" r="3" fill="#fef08a" />
+          </g>
+        `;
+      } else if (HERO_DATA.accessory === 'potion') {
+        accSvg = `
+          <!-- Fiole Alchimique Fumante -->
+          <g transform="translate(142, 115)">
+            <path d="M12 0 L18 0 L18 8 L28 26 C30 32 24 38 15 38 C6 38 0 32 2 26 L12 8 Z" fill="#4ade80" stroke="#166534" stroke-width="2" filter="drop-shadow(0 0 7px #4ade80)" />
+            <rect x="10" y="-3" width="10" height="4" fill="#78350f" rx="1" />
+            <!-- Bulles -->
+            <circle cx="14" cy="24" r="2.5" fill="#fff" opacity="0.7" />
+            <circle cx="18" cy="18" r="1.5" fill="#fff" opacity="0.7" />
+          </g>
+        `;
+      } else {
+        // Calame Doré (Plume d'écrivain magique)
+        accSvg = `
+          <g transform="translate(150, 100) rotate(-35)">
+            <path d="M10 0 C25 20 22 45 10 60 C8 45 4 20 10 0 Z" fill="#f59e0b" filter="drop-shadow(0 0 5px #fef08a)" />
+            <line x1="10" y1="5" x2="10" y2="62" stroke="#fff" stroke-width="1.5" />
+            <circle cx="10" cy="63" r="2" fill="#f59e0b" />
+          </g>
+        `;
+      }
+      document.getElementById('layer-accessory').innerHTML = accSvg;
+
+      // 7. Mise à jour du Décor d'Arrière-Plan
+      renderBackdrop();
+    }
+
+    function renderBackdrop() {
+      const container = document.getElementById('avatar-backdrop');
+      const glowRing = document.getElementById('avatar-glow-ring');
+      const bg = HERO_DATA.backdrop;
+      const cls = CLASSES[HERO_DATA.classKey];
+
+      glowRing.style.backgroundColor = cls.color;
+
+      if (bg === 'fortress') {
+        container.innerHTML = `
+          <svg viewBox="0 0 200 200" class="w-full h-full preserve-3d">
+            <rect width="200" height="200" fill="#0f172a" />
+            <path d="M0 0 L40 0 L40 30 L60 30 L60 0 L100 0 L100 30 L120 30 L120 0 L160 0 L160 30 L180 30 L180 0 L200 0 L200 200 L0 200 Z" fill="#1e293b" />
+            <circle cx="100" cy="70" r="45" fill="none" stroke="#f59e0b" stroke-width="2" opacity="0.2" />
+          </svg>
+        `;
+      } else if (bg === 'crypt') {
+        container.innerHTML = `
+          <svg viewBox="0 0 200 200" class="w-full h-full">
+            <rect width="200" height="200" fill="#180d2a" />
+            <path d="M40 200 C40 100 70 40 100 40 C130 40 160 100 160 200 Z" fill="#2d154d" stroke="#8b5cf6" stroke-width="2" opacity="0.4" />
+            <circle cx="100" cy="110" r="30" fill="none" stroke="#a855f7" stroke-width="1.5" stroke-dasharray="4 4" />
+          </svg>
+        `;
+      } else if (bg === 'forest') {
+        container.innerHTML = `
+          <svg viewBox="0 0 200 200" class="w-full h-full">
+            <rect width="200" height="200" fill="#031f18" />
+            <polygon points="30,200 60,60 90,200" fill="#064e3b" opacity="0.6" />
+            <polygon points="110,200 140,70 170,200" fill="#064e3b" opacity="0.6" />
+            <polygon points="70,200 100,90 130,200" fill="#047857" opacity="0.5" />
+            <!-- Lucioles -->
+            <circle cx="50" cy="110" r="3" fill="#6ee7b7" filter="drop-shadow(0 0 4px #6ee7b7)" />
+            <circle cx="150" cy="90" r="2.5" fill="#6ee7b7" filter="drop-shadow(0 0 4px #6ee7b7)" />
+          </svg>
+        `;
+      } else if (bg === 'tavern') {
+        container.innerHTML = `
+          <svg viewBox="0 0 200 200" class="w-full h-full">
+            <rect width="200" height="200" fill="#2c1404" />
+            <!-- Poutres de bois chaleureuses -->
+            <rect x="0" y="20" width="200" height="18" fill="#451a03" />
+            <line x1="50" y1="20" x2="50" y2="200" stroke="#78350f" stroke-width="10" />
+            <line x1="150" y1="20" x2="150" y2="200" stroke="#78350f" stroke-width="10" />
+            <circle cx="100" cy="80" r="35" fill="#ea580c" opacity="0.3" filter="blur(15px)" />
+          </svg>
+        `;
+      } else {
+        // Laboratoire
+        container.innerHTML = `
+          <svg viewBox="0 0 200 200" class="w-full h-full">
+            <rect width="200" height="200" fill="#042f2e" />
+            <circle cx="100" cy="80" r="50" fill="none" stroke="#06b6d4" stroke-width="2" stroke-dasharray="8 4" opacity="0.5" />
+            <circle cx="100" cy="80" r="30" fill="none" stroke="#22d3ee" stroke-width="1.5" opacity="0.4" />
+            <line x1="40" y1="80" x2="160" y2="80" stroke="#22d3ee" stroke-width="1" opacity="0.3" />
+          </svg>
+        `;
+      }
+    }
+
+    /* ==========================================================================
+       4. CRÉATION DES BOUTONS DE SÉLECTION D'APPARENCE (UI DU CREATOR)
+       ========================================================================== */
+    function initAppearanceControls() {
+      // 1. Peau
+      const skinBox = document.getElementById('skin-picker');
+      skinBox.innerHTML = '';
+      Object.keys(SKIN_PALETTES).forEach(key => {
+        const p = SKIN_PALETTES[key];
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = `h-9 rounded-xl border-2 transition-all flex items-center justify-center ${HERO_DATA.skin === key ? 'border-amber-400 scale-105 shadow-md shadow-amber-500/30' : 'border-slate-800 hover:border-slate-500'}`;
+        btn.style.backgroundColor = p.base;
+        btn.title = p.name;
+        btn.onclick = () => {
+          audio.playEquip();
+          HERO_DATA.skin = key;
+          initAppearanceControls();
+          renderModularAvatar();
+        };
+        skinBox.appendChild(btn);
+      });
+
+      // 2. Coiffures
+      const hairBox = document.getElementById('hairstyle-picker');
+      hairBox.innerHTML = '';
+      HAIR_STYLES.forEach(h => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = `py-1.5 px-2 rounded-lg border text-[11px] font-rpg font-semibold transition-all truncate ${HERO_DATA.hairStyle === h.id ? 'bg-amber-500/20 border-amber-500 text-amber-300 font-bold' : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-slate-200'}`;
+        btn.innerText = h.name.split(' ')[0];
+        btn.title = h.name;
+        btn.onclick = () => {
+          audio.playEquip();
+          HERO_DATA.hairStyle = h.id;
+          document.getElementById('label-hair-style').innerText = h.name;
+          initAppearanceControls();
+          renderModularAvatar();
+        };
+        hairBox.appendChild(btn);
+      });
+
+      // 3. Couleur Cheveux
+      const hairColorBox = document.getElementById('haircolor-picker');
+      hairColorBox.innerHTML = '';
+      Object.keys(HAIR_COLORS).forEach(key => {
+        const hc = HAIR_COLORS[key];
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = `h-7 rounded-lg border-2 transition-all ${HERO_DATA.hairColor === key ? 'border-amber-400 scale-105 shadow-md shadow-amber-500/30' : 'border-slate-800 hover:border-slate-500'}`;
+        btn.style.backgroundColor = hc.base;
+        btn.title = hc.name;
+        btn.onclick = () => {
+          audio.playEquip();
+          HERO_DATA.hairColor = key;
+          initAppearanceControls();
+          renderModularAvatar();
+        };
+        hairColorBox.appendChild(btn);
+      });
+
+      // 4. Regard / Expression
+      const expBox = document.getElementById('expression-picker');
+      expBox.innerHTML = '';
+      EXPRESSIONS.forEach(e => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = `py-1.5 px-2 rounded-lg border text-[11px] font-semibold transition-all truncate ${HERO_DATA.expression === e.id ? 'bg-amber-500/20 border-amber-500 text-amber-300' : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-slate-200'}`;
+        btn.innerText = e.name;
+        btn.onclick = () => {
+          audio.playClick();
+          HERO_DATA.expression = e.id;
+          document.getElementById('label-expression').innerText = e.name;
+          initAppearanceControls();
+          renderModularAvatar();
+        };
+        expBox.appendChild(btn);
+      });
+
+      // 5. Marques
+      const markBox = document.getElementById('mark-picker');
+      markBox.innerHTML = '';
+      MARKS.forEach(m => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = `py-1.5 px-2 rounded-lg border text-[11px] font-semibold transition-all truncate ${HERO_DATA.mark === m.id ? 'bg-amber-500/20 border-amber-500 text-amber-300' : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-slate-200'}`;
+        btn.innerText = m.name;
+        btn.onclick = () => {
+          audio.playClick();
+          HERO_DATA.mark = m.id;
+          document.getElementById('label-facial-mark').innerText = m.name;
+          initAppearanceControls();
+          renderModularAvatar();
+        };
+        markBox.appendChild(btn);
+      });
+
+      // 6. Accessoire
+      const accBox = document.getElementById('accessory-picker');
+      accBox.innerHTML = '';
+      ACCESSORIES.forEach(a => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = `py-1.5 px-2 rounded-lg border text-[11px] font-semibold transition-all flex items-center justify-center gap-1.5 truncate ${HERO_DATA.accessory === a.id ? 'bg-amber-500/20 border-amber-500 text-amber-300 font-bold' : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-slate-200'}`;
+        btn.innerHTML = `<i class="fa-solid ${a.icon} text-amber-400 text-xs"></i> <span>${a.name.split(' ')[0]}</span>`;
+        btn.title = a.name;
+        btn.onclick = () => {
+          audio.playEquip();
+          HERO_DATA.accessory = a.id;
+          document.getElementById('label-accessory').innerText = a.name;
+          initAppearanceControls();
+          renderModularAvatar();
+        };
+        accBox.appendChild(btn);
+      });
+
+      // 7. Décor
+      const bgBox = document.getElementById('backdrop-picker');
+      bgBox.innerHTML = '';
+      BACKDROPS.forEach(b => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = `py-1.5 px-2 rounded-lg border text-[11px] font-semibold transition-all truncate ${HERO_DATA.backdrop === b.id ? 'bg-amber-500/20 border-amber-500 text-amber-300 font-bold' : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-slate-200'}`;
+        btn.innerText = b.name.split(' ')[0];
+        btn.title = b.name;
+        btn.onclick = () => {
+          audio.playClick();
+          HERO_DATA.backdrop = b.id;
+          document.getElementById('label-backdrop').innerText = b.name;
+          initAppearanceControls();
+          renderModularAvatar();
+        };
+        bgBox.appendChild(btn);
+      });
+    }
+
+    function randomizeAppearance() {
+      audio.playDiceRoll();
+      const skins = Object.keys(SKIN_PALETTES);
+      const hairs = HAIR_STYLES.map(h => h.id);
+      const colors = Object.keys(HAIR_COLORS);
+      const exps = EXPRESSIONS.map(e => e.id);
+      const marks = MARKS.map(m => m.id);
+      const accs = ACCESSORIES.map(a => a.id);
+      const bgs = BACKDROPS.map(b => b.id);
+
+      HERO_DATA.skin = skins[Math.floor(Math.random() * skins.length)];
+      HERO_DATA.hairStyle = hairs[Math.floor(Math.random() * hairs.length)];
+      HERO_DATA.hairColor = colors[Math.floor(Math.random() * colors.length)];
+      HERO_DATA.expression = exps[Math.floor(Math.random() * exps.length)];
+      HERO_DATA.mark = marks[Math.floor(Math.random() * marks.length)];
+      HERO_DATA.accessory = accs[Math.floor(Math.random() * accs.length)];
+      HERO_DATA.backdrop = bgs[Math.floor(Math.random() * bgs.length)];
+
+      initAppearanceControls();
+      renderModularAvatar();
+      triggerToast("Apparence générée avec succès !", "fa-wand-magic-sparkles");
+    }
+
+    /* ==========================================================================
+       5. GESTION DES CLASSES & ATTRIBUTS
+       ========================================================================== */
+    function setClass(key, playSound = true) {
+      if (playSound) audio.playEquip();
+      HERO_DATA.classKey = key;
+      const c = CLASSES[key];
+
+      // Mise à jour visuelle des boutons de classes
+      ['paladin', 'ranger', 'bard', 'alchemist'].forEach(k => {
+        const el = document.getElementById(`class-select-${k}`);
+        if (k === key) {
+          el.className = "class-card cursor-pointer p-3 rounded-xl border-2 border-amber-500 bg-amber-500/15 transition-all flex gap-3 items-center shadow-lg shadow-amber-500/10";
+        } else {
+          el.className = "class-card cursor-pointer p-3 rounded-xl border border-slate-800 bg-slate-950/40 hover:border-slate-600 transition-all flex gap-3 items-center opacity-70 hover:opacity-100";
+        }
+      });
+
+      // Synchronisation sur la carte
+      document.getElementById('card-class-name').innerText = c.name;
+      document.getElementById('card-class-icon').className = c.icon;
+      document.getElementById('card-class-badge').style.borderColor = c.color;
+      document.getElementById('card-class-badge').style.color = c.color;
+      document.getElementById('card-spec-txt').innerText = c.spec;
+
+      renderModularAvatar();
+      drawRadarChart();
+    }
+
+    function updateStats() {
+      audio.playClick();
+      const soc = parseInt(document.getElementById('input-stat-social').value, 10);
+      const spd = parseInt(document.getElementById('input-stat-speed').value, 10);
+      const chn = parseInt(document.getElementById('input-stat-channel').value, 10);
+      const chs = parseInt(document.getElementById('input-stat-chaos').value, 10);
+
+      HERO_DATA.stats = { social: soc, speed: spd, channel: chn, chaos: chs };
+
+      // Affichage numérique & textes
+      document.getElementById('val-social').innerText = `${soc} / 5`;
+      document.getElementById('desc-social').innerText = `« ${STAT_TEXTS.social[soc]} »`;
+      document.getElementById('disp-stat-social').innerText = `${soc}/5`;
+      document.getElementById('bar-stat-social').style.width = `${(soc / 5) * 100}%`;
+
+      document.getElementById('val-speed').innerText = `${spd} / 5`;
+      document.getElementById('desc-speed').innerText = `« ${STAT_TEXTS.speed[spd]} »`;
+      document.getElementById('disp-stat-speed').innerText = `${spd}/5`;
+      document.getElementById('bar-stat-speed').style.width = `${(spd / 5) * 100}%`;
+
+      document.getElementById('val-channel').innerText = `${chn} / 5`;
+      document.getElementById('desc-channel').innerText = `« ${STAT_TEXTS.channel[chn]} »`;
+      document.getElementById('disp-stat-channel').innerText = `${chn}/5`;
+      document.getElementById('bar-stat-channel').style.width = `${(chn / 5) * 100}%`;
+
+      document.getElementById('val-chaos').innerText = `${chs} / 5`;
+      document.getElementById('desc-chaos').innerText = `« ${STAT_TEXTS.chaos[chs]} »`;
+      document.getElementById('disp-stat-chaos').innerText = `${chs}/5`;
+      document.getElementById('bar-stat-chaos').style.width = `${(chs / 5) * 100}%`;
+
+      drawRadarChart();
+    }
+
+    function applySnippet(field, text) {
+      audio.playClick();
+      if (field === 'ultimate') {
+        document.getElementById('input-ultimate').value = text;
+        document.getElementById('card-ultimate-txt').innerText = text;
+        HERO_DATA.ultimate = text;
+      } else if (field === 'weakness') {
+        document.getElementById('input-weakness').value = text;
+        document.getElementById('card-weakness-txt').innerText = text;
+        HERO_DATA.weakness = text;
+      } else if (field === 'potion') {
+        document.getElementById('input-potion').value = text;
+        document.getElementById('card-potion-txt').innerText = text;
+        HERO_DATA.potion = text;
+      }
+      triggerToast("Grimoire mis à jour !", "fa-book-sparkles");
+    }
+
+    /* Rendu du Radar Chart en Canvas 2D */
+    function drawRadarChart() {
+      const canvas = document.getElementById('radarCanvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const w = canvas.width;
+      const h = canvas.height;
+      const cx = w / 2;
+      const cy = h / 2;
+      const radius = 62;
+
+      ctx.clearRect(0, 0, w, h);
+
+      const axes = [
+        { name: "Social", val: HERO_DATA.stats.social, angle: -Math.PI / 2 },
+        { name: "Vitesse", val: HERO_DATA.stats.speed, angle: 0 },
+        { name: "Canal", val: HERO_DATA.stats.channel, angle: Math.PI / 2 },
+        { name: "Chaos", val: HERO_DATA.stats.chaos, angle: Math.PI }
+      ];
+
+      // Toile de fond concentrique
+      for (let level = 1; level <= 5; level++) {
+        const r = (radius / 5) * level;
+        ctx.beginPath();
+        axes.forEach((axis, i) => {
+          const x = cx + r * Math.cos(axis.angle);
+          const y = cy + r * Math.sin(axis.angle);
+          if (i === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        });
+        ctx.closePath();
+        ctx.strokeStyle = level === 5 ? 'rgba(212, 175, 55, 0.4)' : 'rgba(148, 163, 184, 0.12)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      }
+
+      // Rayons & Noms
+      axes.forEach(axis => {
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.lineTo(cx + radius * Math.cos(axis.angle), cy + radius * Math.sin(axis.angle));
+        ctx.strokeStyle = 'rgba(212, 175, 55, 0.2)';
+        ctx.stroke();
+
+        const lx = cx + (radius + 14) * Math.cos(axis.angle);
+        const ly = cy + (radius + 14) * Math.sin(axis.angle) + 3;
+        ctx.fillStyle = '#fef08a';
+        ctx.font = 'bold 9px Cinzel, serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(axis.name, lx, ly);
+      });
+
+      // Polygone plein du héros
+      ctx.beginPath();
+      const points = [];
+      axes.forEach((axis, i) => {
+        const r = (radius / 5) * axis.val;
+        const x = cx + r * Math.cos(axis.angle);
+        const y = cy + r * Math.sin(axis.angle);
+        points.push({ x, y });
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      });
+      ctx.closePath();
+
+      const grad = ctx.createRadialGradient(cx, cy, 5, cx, cy, radius);
+      grad.addColorStop(0, 'rgba(245, 158, 11, 0.65)');
+      grad.addColorStop(1, 'rgba(180, 83, 9, 0.25)');
+      ctx.fillStyle = grad;
+      ctx.fill();
+
+      ctx.strokeStyle = '#fde047';
+      ctx.lineWidth = 2;
+      ctx.shadowColor = '#f59e0b';
+      ctx.shadowBlur = 8;
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+
+      // Points lumineux
+      points.forEach(pt => {
+        ctx.beginPath();
+        ctx.arc(pt.x, pt.y, 3, 0, Math.PI * 2);
+        ctx.fillStyle = '#ffffff';
+        ctx.fill();
+        ctx.strokeStyle = '#d97706';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+      });
+    }
+
+    /* ==========================================================================
+       6. LE DÉ DU DESTIN (RANDOMIZER RPG COMPLET)
+       ========================================================================== */
+    const HERO_NAMES = ["Sire Valérian", "Dame Aliénor", "Mage Ézéchiel", "Léa l'Audacieuse", "Galahad le Preux", "Sybille des Vents", "Bérénice Codeur", "Robin du Sprint", "Thalor de l'Ombre"];
+    const GUILD_NAMES = ["Équipe 1 • Datacrons", "Équipe 2 • WebSpells", "Équipe 3 • Algomanciens", "Équipe 4 • StackOverlords", "Équipe 5 • SyntaxKnights"];
+    const TITLES = ["Le Bâtisseur Méthodique", "L'Éclaireur Intrépide", "L'Orateur Inspiré", "L'Alchimiste du Pixel", "Le Gardien du Jalon", "Le Débogueur Zen"];
+
+    function rollFateDice() {
+      audio.playDiceRoll();
+
+      // Animation du bouton dé
+      const btn = document.getElementById('btn-dice');
+      btn.classList.add('rotate-180', 'scale-110');
+      setTimeout(() => btn.classList.remove('rotate-180', 'scale-110'), 300);
+
+      // Tirage Aléatoire
+      const name = HERO_NAMES[Math.floor(Math.random() * HERO_NAMES.length)];
+      const guild = GUILD_NAMES[Math.floor(Math.random() * GUILD_NAMES.length)];
+      const title = TITLES[Math.floor(Math.random() * TITLES.length)];
+      const classes = Object.keys(CLASSES);
+      const chosenClass = classes[Math.floor(Math.random() * classes.length)];
+
+      HERO_DATA.name = name;
+      HERO_DATA.guild = guild;
+      HERO_DATA.title = title;
+
+      // Stats équilibrées aléatoires (1 à 5)
+      HERO_DATA.stats.social = Math.floor(1 + Math.random() * 5);
+      HERO_DATA.stats.speed = Math.floor(1 + Math.random() * 5);
+      HERO_DATA.stats.channel = Math.floor(1 + Math.random() * 5);
+      HERO_DATA.stats.chaos = Math.floor(1 + Math.random() * 5);
+
+      // Formulaire
+      document.getElementById('input-hero-name').value = name;
+      document.getElementById('card-name-txt').innerText = name;
+      document.getElementById('input-guild-name').value = guild;
+      document.getElementById('card-guild-txt').innerText = guild;
+      document.getElementById('input-hero-title').value = title;
+      document.getElementById('card-title-txt').innerText = title;
+
+      document.getElementById('input-stat-social').value = HERO_DATA.stats.social;
+      document.getElementById('input-stat-speed').value = HERO_DATA.stats.speed;
+      document.getElementById('input-stat-channel').value = HERO_DATA.stats.channel;
+      document.getElementById('input-stat-chaos').value = HERO_DATA.stats.chaos;
+
+      // Randomiser aussi l'apparence
+      randomizeAppearance();
+
+      // Appliquer la classe
+      setClass(chosenClass, false);
+      updateStats();
+
+      // Confetti & Toast
+      confetti({ particleCount: 40, spread: 50, origin: { y: 0.6 } });
+      triggerToast("Le Dé du Destin a forgé un nouvel Aventurier !", "fa-dice-d20");
+    }
+
+    /* ==========================================================================
+       7. HALL DE GUILDE (SAUVEGARDE LOCALE & CONSULTATION PROMO)
+       ========================================================================== */
+    function getGuildRoster() {
+      const stored = localStorage.getItem('rpg_guild_roster_v2');
+      if (stored) {
+        try {
+          return JSON.parse(stored);
+        } catch (e) {
+          return DEFAULT_GUILD_ROSTER;
+        }
+      }
+      return DEFAULT_GUILD_ROSTER;
+    }
+
+    function saveGuildRoster(roster) {
+      localStorage.setItem('rpg_guild_roster_v2', JSON.stringify(roster));
+      renderGuildRoster();
+    }
+
+    function saveCharacterToGuild() {
+      audio.playFanfare();
+      const roster = getGuildRoster();
+
+      const newHero = {
+        id: "hero-" + Date.now(),
+        name: document.getElementById('input-hero-name').value.trim() || "Aventurier",
+        guild: document.getElementById('input-guild-name').value.trim() || "Guilde Sans Nom",
+        classKey: HERO_DATA.classKey,
+        title: document.getElementById('input-hero-title').value.trim() || "Aventurier Novice",
+        stats: { ...HERO_DATA.stats },
+        ultimate: document.getElementById('input-ultimate').value.trim() || HERO_DATA.ultimate,
+        weakness: document.getElementById('input-weakness').value.trim() || HERO_DATA.weakness,
+        potion: document.getElementById('input-potion').value.trim() || HERO_DATA.potion,
+        skin: HERO_DATA.skin,
+        hairStyle: HERO_DATA.hairStyle,
+        hairColor: HERO_DATA.hairColor,
+        expression: HERO_DATA.expression,
+        mark: HERO_DATA.mark,
+        accessory: HERO_DATA.accessory,
+        backdrop: HERO_DATA.backdrop
+      };
+
+      // Remplacer ou ajouter
+      const existingIdx = roster.findIndex(h => h.name.toLowerCase() === newHero.name.toLowerCase());
+      if (existingIdx >= 0) {
+        roster[existingIdx] = newHero;
+      } else {
+        roster.unshift(newHero);
+      }
+
+      saveGuildRoster(roster);
+      confetti({ particleCount: 70, spread: 60, origin: { y: 0.7 } });
+      triggerToast("Aventurier inscrit au Registre de la Guilde !", "fa-floppy-disk");
+    }
+
+    function renderGuildRoster() {
+      const roster = getGuildRoster();
+      const grid = document.getElementById('guild-roster-grid');
+      document.getElementById('guild-badge-count').innerText = roster.length;
+      grid.innerHTML = '';
+
+      if (roster.length === 0) {
+        grid.innerHTML = `<div class="col-span-3 text-center py-12 text-slate-500 font-rpg">Le Hall de la Guilde est encore désert. Forges le premier Héros !</div>`;
+        return;
+      }
+
+      roster.forEach(hero => {
+        const cls = CLASSES[hero.classKey] || CLASSES.paladin;
+        const card = document.createElement('div');
+        card.className = "rpg-frame rounded-2xl p-4 bg-[#0e1322] flex flex-col justify-between space-y-3";
+        card.innerHTML = `
+          <div class="flex items-start justify-between gap-2 border-b border-slate-800 pb-2">
+            <div>
+              <span class="text-[9px] font-mono text-amber-400 uppercase tracking-widest">${hero.guild}</span>
+              <h3 class="font-fantasy text-base text-amber-300 font-bold">${hero.name}</h3>
+              <p class="text-[11px] text-slate-400 italic">${hero.title}</p>
+            </div>
+            <div class="px-2 py-1 rounded bg-amber-500/10 border border-amber-500/40 text-[10px] font-rpg font-bold flex items-center gap-1" style="color: ${cls.color}">
+              <i class="${cls.icon}"></i> ${cls.name}
+            </div>
+          </div>
+
+          <div class="bg-slate-950/80 p-2.5 rounded-xl border border-slate-800 space-y-1.5 text-[11px]">
+            <div class="flex items-center gap-1.5 text-amber-300">
+              <i class="fa-solid fa-sun text-amber-400 text-xs"></i> <strong>Don :</strong> <span class="truncate">${hero.ultimate}</span>
+            </div>
+            <div class="flex items-center gap-1.5 text-red-300">
+              <i class="fa-solid fa-skull text-red-400 text-xs"></i> <strong>Kryptonite :</strong> <span class="truncate">${hero.weakness}</span>
+            </div>
+            <div class="flex items-center gap-1.5 text-emerald-300">
+              <i class="fa-solid fa-flask text-emerald-400 text-xs"></i> <strong>Potion :</strong> <span class="truncate">${hero.potion}</span>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between pt-1">
+            <span class="text-[10px] font-mono text-slate-500">Social: ${hero.stats.social}/5 • Init: ${hero.stats.speed}/5</span>
+            <div class="flex items-center gap-1.5">
+              <button onclick="loadHeroFromGuild('${hero.id}')" class="px-2.5 py-1 rounded bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-[10px] font-rpg" title="Charger dans la Forge">
+                <i class="fa-solid fa-pen-to-square"></i> Modifier
+              </button>
+              <button onclick="deleteHeroFromGuild('${hero.id}')" class="w-6 h-6 rounded bg-slate-800 hover:bg-red-900/60 text-slate-400 hover:text-red-300 flex items-center justify-center text-[10px]" title="Supprimer">
+                <i class="fa-solid fa-trash"></i>
+              </button>
+            </div>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    function loadHeroFromGuild(id) {
+      audio.playFanfare();
+      const roster = getGuildRoster();
+      const hero = roster.find(h => h.id === id);
+      if (!hero) return;
+
+      Object.assign(HERO_DATA, hero);
+
+      document.getElementById('input-hero-name').value = hero.name;
+      document.getElementById('card-name-txt').innerText = hero.name;
+      document.getElementById('input-guild-name').value = hero.guild;
+      document.getElementById('card-guild-txt').innerText = hero.guild;
+      document.getElementById('input-hero-title').value = hero.title;
+      document.getElementById('card-title-txt').innerText = hero.title;
+
+      document.getElementById('input-ultimate').value = hero.ultimate;
+      document.getElementById('card-ultimate-txt').innerText = hero.ultimate;
+      document.getElementById('input-weakness').value = hero.weakness;
+      document.getElementById('card-weakness-txt').innerText = hero.weakness;
+      document.getElementById('input-potion').value = hero.potion;
+      document.getElementById('card-potion-txt').innerText = hero.potion;
+
+      document.getElementById('input-stat-social').value = hero.stats.social;
+      document.getElementById('input-stat-speed').value = hero.stats.speed;
+      document.getElementById('input-stat-channel').value = hero.stats.channel;
+      document.getElementById('input-stat-chaos').value = hero.stats.chaos;
+
+      setClass(hero.classKey, false);
+      initAppearanceControls();
+      renderModularAvatar();
+      updateStats();
+
+      setView('forge');
+      triggerToast(`Héros « ${hero.name} » chargé dans la Forge !`, "fa-hat-wizard");
+    }
+
+    function deleteHeroFromGuild(id) {
+      audio.playClick();
+      let roster = getGuildRoster();
+      roster = roster.filter(h => h.id !== id);
+      saveGuildRoster(roster);
+      triggerToast("Aventurier retiré du Hall", "fa-trash");
+    }
+
+    /* ==========================================================================
+       8. EXPORT PNG & COPIE GRIMOIRE MARKDOWN
+       ========================================================================== */
+    function exportPNG() {
+      audio.playFanfare();
+      const btn = document.getElementById('btn-export-png');
+      const originalHTML = btn.innerHTML;
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Capture...`;
+      btn.disabled = true;
+
+      const target = document.getElementById('character-card');
+
+      html2canvas(target, {
+        scale: 2.5,
+        backgroundColor: '#07090e',
+        useCORS: true,
+        logging: false
+      }).then(canvas => {
+        const link = document.createElement('a');
+        const filename = (HERO_DATA.name || "aventurier").toLowerCase().replace(/[^a-z0-9]/g, "-");
+        link.download = `carte-aventurier-${filename}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+
+        btn.innerHTML = originalHTML;
+        btn.disabled = false;
+        triggerToast("Carte de Héros gravée en PNG HD !", "fa-file-arrow-down");
+      }).catch(err => {
+        btn.innerHTML = originalHTML;
+        btn.disabled = false;
+        triggerToast("Erreur lors de la capture PNG", "fa-triangle-exclamation");
+      });
+    }
+
+    function copyMarkdownGrimoire() {
+      audio.playClick();
+      const name = document.getElementById('card-name-txt').innerText;
+      const guild = document.getElementById('card-guild-txt').innerText;
+      const title = document.getElementById('card-title-txt').innerText;
+      const cls = CLASSES[HERO_DATA.classKey];
+
+      const soc = HERO_DATA.stats.social;
+      const spd = HERO_DATA.stats.speed;
+      const chn = HERO_DATA.stats.channel;
+      const chs = HERO_DATA.stats.chaos;
+
+      const ult = document.getElementById('card-ultimate-txt').innerText;
+      const weak = document.getElementById('card-weakness-txt').innerText;
+      const pot = document.getElementById('card-potion-txt').innerText;
+
+      const markdown = `### 🛡️ Fiche Aventurier : ${name} (${cls.name} • ${cls.role})
+> *« ${title} »*
+* **Guilde / Équipe :** ${guild}
+* **Mana Social :** ${soc}/5 (${STAT_TEXTS.social[soc]})
+* **Vitesse d'Initiative :** ${spd}/5 (${STAT_TEXTS.speed[spd]})
+* **Canal Préféré :** ${chn}/5 (${STAT_TEXTS.channel[chn]})
+* **Tolérance aux Pivots :** ${chs}/5 (${STAT_TEXTS.chaos[chs]})
+---
+* ⚡ **Don Ultime (Zone de génie) :** ${ult}
+* ☠️ **Malus Critique (Kryptonite) :** ${weak}
+* 🧪 **Potion d'Apaisement (Mode d'emploi) :** ${pot}
+*(Généré via RPG Guild Builder • Bootcamp Edition)*`;
+
+      const tempArea = document.createElement('textarea');
+      tempArea.value = markdown;
+      tempArea.style.position = 'fixed';
+      tempArea.style.left = '-9999px';
+      document.body.appendChild(tempArea);
+      tempArea.focus();
+      tempArea.select();
+      try {
+        document.execCommand('copy');
+        triggerToast("Grimoire Markdown copié ! Prêt pour Slack/Discord.", "fa-copy");
+      } catch (e) {
+        triggerToast("Impossible de copier le texte.", "fa-triangle-exclamation");
+      }
+      document.body.removeChild(tempArea);
+    }
+
+    /* ==========================================================================
+       9. GESTION DES VUES & ONGLETS
+       ========================================================================== */
+    function setView(viewName) {
+      audio.playClick();
+      const forgeView = document.getElementById('view-forge');
+      const hallView = document.getElementById('view-hall');
+      const btnForge = document.getElementById('nav-btn-forge');
+      const btnHall = document.getElementById('nav-btn-hall');
+
+      if (viewName === 'forge') {
+        forgeView.classList.remove('hidden');
+        hallView.classList.add('hidden');
+        btnForge.className = "px-3 py-1.5 rounded-lg text-xs font-rpg font-bold transition-all text-amber-400 bg-amber-500/20 border border-amber-500/40 flex items-center gap-1.5 shadow-sm";
+        btnHall.className = "px-3 py-1.5 rounded-lg text-xs font-rpg font-bold transition-all text-slate-400 hover:text-slate-200 flex items-center gap-1.5";
+      } else {
+        forgeView.classList.add('hidden');
+        hallView.classList.remove('hidden');
+        btnHall.className = "px-3 py-1.5 rounded-lg text-xs font-rpg font-bold transition-all text-amber-400 bg-amber-500/20 border border-amber-500/40 flex items-center gap-1.5 shadow-sm";
+        btnForge.className = "px-3 py-1.5 rounded-lg text-xs font-rpg font-bold transition-all text-slate-400 hover:text-slate-200 flex items-center gap-1.5";
+        renderGuildRoster();
+      }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function setTab(tabId) {
+      audio.playClick();
+      const tabs = ['avatar', 'archetype', 'stats', 'grimoire'];
+      tabs.forEach(t => {
+        const btn = document.getElementById(`tab-btn-${t}`);
+        const panel = document.getElementById(`panel-${t}`);
+        if (t === tabId) {
+          panel.classList.remove('hidden');
+          btn.className = "tab-btn flex-1 min-w-[105px] py-2 px-2.5 rounded-lg text-xs font-rpg font-bold transition-all text-amber-300 bg-amber-500/20 border border-amber-500/40 flex items-center justify-center gap-1.5 shadow-inner";
+        } else {
+          panel.classList.add('hidden');
+          btn.className = "tab-btn flex-1 min-w-[105px] py-2 px-2.5 rounded-lg text-xs font-rpg font-bold transition-all text-slate-400 hover:text-slate-200 flex items-center justify-center gap-1.5";
+        }
+      });
+    }
+
+    function toggleModal(id) {
+      audio.playClick();
+      const m = document.getElementById(id);
+      m.classList.toggle('hidden');
+    }
+
+    function triggerToast(msg, icon = 'fa-sparkles') {
+      const toast = document.getElementById('rpg-toast');
+      const toastMsg = document.getElementById('toast-msg');
+      const toastIcon = document.getElementById('toast-icon');
+      toastMsg.innerText = msg;
+      toastIcon.className = `fa-solid ${icon} text-amber-400`;
+
+      toast.classList.remove('translate-y-24', 'opacity-0');
+      toast.classList.add('translate-y-0', 'opacity-100');
+
+      setTimeout(() => {
+        toast.classList.remove('translate-y-0', 'opacity-100');
+        toast.classList.add('translate-y-24', 'opacity-0');
+      }, 3500);
+    }
+
+    /* ==========================================================================
+       10. INITIALISATION GÉNÉRALE AU CHARGEMENT DU DOM
+       ========================================================================== */
+    window.addEventListener('DOMContentLoaded', () => {
+      // Écouteurs de saisie en direct
+      document.getElementById('input-hero-name').addEventListener('input', e => {
+        const val = e.target.value.trim() || "Sire Valérian";
+        document.getElementById('card-name-txt').innerText = val;
+        HERO_DATA.name = val;
+      });
+
+      document.getElementById('input-guild-name').addEventListener('input', e => {
+        const val = e.target.value.trim() || "Projet Fil Rouge #03";
+        document.getElementById('card-guild-txt').innerText = val;
+        HERO_DATA.guild = val;
+      });
+
+      document.getElementById('input-hero-title').addEventListener('input', e => {
+        const val = e.target.value.trim() || "Aventurier";
+        document.getElementById('card-title-txt').innerText = val;
+        HERO_DATA.title = val;
+      });
+
+      document.getElementById('input-ultimate').addEventListener('input', e => {
+        const val = e.target.value.trim() || "Aucun don renseigné.";
+        document.getElementById('card-ultimate-txt').innerText = val;
+        HERO_DATA.ultimate = val;
+      });
+
+      document.getElementById('input-weakness').addEventListener('input', e => {
+        const val = e.target.value.trim() || "Aucun malus renseigné.";
+        document.getElementById('card-weakness-txt').innerText = val;
+        HERO_DATA.weakness = val;
+      });
+
+      document.getElementById('input-potion').addEventListener('input', e => {
+        const val = e.target.value.trim() || "Aucune potion renseignée.";
+        document.getElementById('card-potion-txt').innerText = val;
+        HERO_DATA.potion = val;
+      });
+
+      // Lancement initial
+      document.getElementById('input-ultimate').value = HERO_DATA.ultimate;
+      document.getElementById('input-weakness').value = HERO_DATA.weakness;
+      document.getElementById('input-potion').value = HERO_DATA.potion;
+      document.getElementById('card-unique-id').innerText = Math.floor(1000 + Math.random() * 9000);
+
+      initAppearanceControls();
+      setClass('paladin', false);
+      updateStats();
+      renderModularAvatar();
+      renderGuildRoster();
+    });
+  </script>
+</body>
+</html>

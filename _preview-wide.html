@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Preview large</title>
+<style>
+  html, body { margin: 0; background: #050408; }
+  #wrap { width: 1440px; height: 980px; transform-origin: top left; transform: scale(.545); }
+  iframe { width: 1440px; height: 980px; border: 0; display: block; }
+</style>
+</head>
+<body>
+<div id="wrap"><iframe id="frame" src="index.html"></iframe></div>
+<script>
+  const frame = document.getElementById('frame');
+  frame.addEventListener('load', function () {
+    const doc = frame.contentDocument;
+    if (!doc) return;
+    const btn = doc.querySelector('.top-tab[data-view="guild"]');
+    if (btn) btn.click();
+    frame.contentWindow.scrollTo(0, 0);
+  });
+</script>
+</body>
+</html>

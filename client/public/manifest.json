@@ -1,0 +1,25 @@
+{
+  "name": "Aetheria — Forge de Héros",
+  "short_name": "Aetheria",
+  "description": "Crée ton aventurier, personnalise son portrait fantasy, définit ses stats et partage sa fiche avec ta guilde. Application RPG PWA installable.",
+  "lang": "fr",
+  "dir": "ltr",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
+  "orientation": "any",
+  "background_color": "#08070b",
+  "theme_color": "#08070b",
+  "categories": ["entertainment", "productivity", "lifestyle"],
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Forge un Héros", "short_name": "Forge", "description": "Ouvre la forge pour créer un nouvel aventurier", "url": "./", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Hall de Guilde", "short_name": "Guilde", "description": "Consulte le registre des aventuriers", "url": "./#guild", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] }
+  ],
+  "prefer_related_applications": false
+}

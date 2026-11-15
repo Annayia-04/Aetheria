@@ -1,0 +1,54 @@
+{
+  "name": "Aetheria — Forge de Héros",
+  "short_name": "Aetheria",
+  "description": "Crée ton aventurier, personnalise son avatar, définit ses stats et partage ta fiche avec ta guilde. Une application RPG de création de personnage installable.",
+  "lang": "fr",
+  "dir": "ltr",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
+  "orientation": "any",
+  "background_color": "#08070b",
+  "theme_color": "#08070b",
+  "categories": ["entertainment", "productivity", "lifestyle"],
+  "icons": [
+    {
+      "src": "assets/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Forge un Héros",
+      "short_name": "Forge",
+      "description": "Ouvre la forge pour créer un nouvel aventurier",
+      "url": "./index.html",
+      "icons": [{ "src": "assets/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Hall de Guilde",
+      "short_name": "Guilde",
+      "description": "Consulte le registre des aventuriers",
+      "url": "./index.html#guild",
+      "icons": [{ "src": "assets/icons/icon-192.png", "sizes": "192x192" }]
+    }
+  ],
+  "prefer_related_applications": false,
+  "related_applications": []
+}
