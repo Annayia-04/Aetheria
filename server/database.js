@@ -201,6 +201,7 @@ function seedDefaultRoster(db) {
       0, now, now
     ]);
   }
+  saveDatabase();
   console.log('[DB] Default roster seeded');
 }
 
@@ -295,6 +296,7 @@ export const HeroModel = {
       now, now
     ]);
 
+    saveDatabase();
     return this.getById(id);
   },
 
@@ -321,12 +323,14 @@ export const HeroModel = {
       merged.updatedAt, id
     ]);
 
+    saveDatabase();
     return this.getById(id);
   },
 
   async delete(id) {
     const db = await getDatabase();
     const result = runPrepared(db, 'DELETE FROM heroes WHERE id = ?', [id]);
+    saveDatabase();
     return result.changes > 0;
   },
 
@@ -380,6 +384,7 @@ export const SettingsModel = {
       VALUES (?, ?, ?)
       ON CONFLICT(key) DO UPDATE SET value_json = excluded.value_json, updated_at = excluded.updated_at
     `, [key, JSON.stringify(value), now]);
+    saveDatabase();
   }
 };
 
